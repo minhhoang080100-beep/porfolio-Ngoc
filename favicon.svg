@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Soft shadow -->
+  <path d="M30 75 A 20 20 0 0 1 30 35 A 25 25 0 0 1 75 30 A 20 20 0 0 1 85 65 A 15 15 0 0 1 85 75 Z" fill="rgba(0,0,0,0.1)" />
+  <!-- Cloud body -->
+  <path d="M25 70 A 20 20 0 0 1 25 30 A 25 25 0 0 1 70 25 A 20 20 0 0 1 80 60 A 15 15 0 0 1 80 70 Z" fill="#a7d0f6" />
+  
+  <!-- Cute Eyes -->
+  <circle cx="40" cy="48" r="4" fill="#2b2a2a" />
+  <circle cx="60" cy="48" r="4" fill="#2b2a2a" />
+  <!-- Eye highlights -->
+  <circle cx="39" cy="47" r="1.5" fill="#ffffff" />
+  <circle cx="59" cy="47" r="1.5" fill="#ffffff" />
+
+  <!-- Cute Smile -->
+  <path d="M46 54 Q 50 59 54 54" stroke="#2b2a2a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Blush -->
+  <ellipse cx="32" cy="53" rx="5" ry="3" fill="#ffb6c1" opacity="0.8"/>
+  <ellipse cx="68" cy="53" rx="5" ry="3" fill="#ffb6c1" opacity="0.8"/>
+</svg>
