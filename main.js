@@ -133,18 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const masonryItems = document.querySelectorAll('.masonry-item');
 
     masonryItems.forEach(item => {
-        // Hover to play video
-        if (item.dataset.type === 'video') {
-            const video = item.querySelector('video');
-            item.addEventListener('mouseenter', () => {
-                video.play().catch(e => console.log("Autoplay prevented:", e));
-            });
-            item.addEventListener('mouseleave', () => {
-                video.pause();
-                // video.currentTime = 0; // Optional: reset to beginning
-            });
-        }
-
         item.addEventListener('click', () => {
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
