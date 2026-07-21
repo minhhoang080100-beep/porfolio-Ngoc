@@ -166,9 +166,6 @@ async function fetchDynamicData() {
                             }
                         };
                     });
-                    
-                    const footerCvBtn = document.querySelector('.footer-content .btn-primary');
-                    if (footerCvBtn) footerCvBtn.href = item.value;
                 }
             });
         }
