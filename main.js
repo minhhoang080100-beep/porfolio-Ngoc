@@ -100,6 +100,10 @@ async function fetchDynamicData() {
                     translations.vi.hero_subtitle = item.value;
                     translations.en.hero_subtitle = item.value;
                 }
+                if (item.key === 'hero_image_url' && item.value) {
+                    const heroImg = document.querySelector('.hero-image img');
+                    if (heroImg) heroImg.src = item.value;
+                }
                 
                 // Contact info updates
                 const contactInfo = document.getElementById('contactInfo');

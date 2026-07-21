@@ -65,6 +65,53 @@
             editBtn.addEventListener('click', (e) => { e.stopPropagation(); openIntroEditor(); });
             heroContent.appendChild(editBtn);
         }
+
+        const heroImage = document.querySelector('.hero-image');
+        if (heroImage && !heroImage.querySelector('.admin-edit-btn')) {
+            heroImage.style.position = 'relative';
+            
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.style.display = 'none';
+            heroImage.appendChild(fileInput);
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'admin-edit-btn';
+            editBtn.innerHTML = '<i class="fas fa-camera"></i>';
+            editBtn.title = 'Thay đổi Ảnh đại diện';
+            editBtn.style.top = '20px';
+            editBtn.style.right = '20px';
+            editBtn.style.zIndex = '10';
+            editBtn.addEventListener('click', (e) => { 
+                e.stopPropagation(); 
+                fileInput.click();
+            });
+            heroImage.appendChild(editBtn);
+
+            fileInput.addEventListener('change', async function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    showToast('Đang tải ảnh lên...', 'info');
+                    try {
+                        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                        const fileName = `hero_${Date.now()}_${safeName}`;
+                        const { error } = await sb.storage.from('media').upload(fileName, file, { cacheControl: '3600' });
+                        if (error) throw error;
+                        
+                        const { data: urlData } = sb.storage.from('media').getPublicUrl(fileName);
+                        await sb.from('settings').upsert({ key: 'hero_image_url', value: urlData.publicUrl }, { onConflict: 'key' });
+                        
+                        const img = heroImage.querySelector('img');
+                        if (img) img.src = urlData.publicUrl;
+                        showToast('Đã thay đổi ảnh đại diện thành công!');
+                    } catch (err) {
+                        showToast('Lỗi upload: ' + err.message, 'error');
+                    }
+                    this.value = '';
+                }
+            });
+        }
     }
 
     function setupContactAdmin() {
