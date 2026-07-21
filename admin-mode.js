@@ -334,19 +334,56 @@
                 <input type="text" id="editFb" class="admin-input">
             </div>
             <div class="admin-form-group">
-                <label>Link CV (hoặc tên file PDF)</label>
-                <input type="text" id="editCv" class="admin-input">
+                <label>File CV (PDF)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="editCv" class="admin-input" placeholder="Chưa có CV" readonly style="flex: 1;">
+                    <button id="btnUploadCv" type="button" class="admin-save-btn" style="width: auto; padding: 0 15px; margin: 0;"><i class="fas fa-upload"></i> Tải PDF</button>
+                    <input type="file" id="cvFileInput" accept="application/pdf" hidden>
+                </div>
             </div>
         `;
-        // Pre-fill
+        
         const pEl = document.getElementById('phoneItem');
         if (pEl) document.getElementById('editPhone').value = pEl.textContent.trim();
         const eEl = document.getElementById('emailItem');
         if (eEl) document.getElementById('editEmail').value = eEl.textContent.trim();
         const fEl = document.getElementById('fbItem');
         if (fEl) document.getElementById('editFb').value = fEl.href;
-        const cvEl = document.querySelector('.btn-cv');
-        if (cvEl) document.getElementById('editCv').value = cvEl.getAttribute('href');
+        
+        // Wait for modal to render to attach events
+        setTimeout(() => {
+            const btnUploadCv = document.getElementById('btnUploadCv');
+            const cvFileInput = document.getElementById('cvFileInput');
+            const editCv = document.getElementById('editCv');
+            
+            // Get current CV URL from Supabase Settings instead of DOM to be safe
+            sb.from('settings').select('value').eq('key', 'cv_url').single().then(({data}) => {
+                if (data && data.value) editCv.value = data.value;
+            });
+
+            btnUploadCv.addEventListener('click', () => cvFileInput.click());
+            
+            cvFileInput.addEventListener('change', async function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    if (file.type !== 'application/pdf') return showToast('Chỉ hỗ trợ file PDF!', 'error');
+                    btnUploadCv.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    btnUploadCv.disabled = true;
+                    try {
+                        const fileName = \`cv_\${Date.now()}.pdf\`;
+                        const { error } = await sb.storage.from('media').upload(fileName, file, { cacheControl: '3600' });
+                        if (error) throw error;
+                        const { data: urlData } = sb.storage.from('media').getPublicUrl(fileName);
+                        editCv.value = urlData.publicUrl;
+                        showToast('Tải CV lên thành công! Đừng quên bấm Lưu.');
+                    } catch(err) {
+                        showToast('Lỗi upload: ' + err.message, 'error');
+                    }
+                    btnUploadCv.innerHTML = '<i class="fas fa-upload"></i> Tải PDF';
+                    btnUploadCv.disabled = false;
+                }
+            });
+        }, 100);
 
         document.getElementById('adminModalSave').onclick = async () => {
             const btn = document.getElementById('adminModalSave');

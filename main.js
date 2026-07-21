@@ -147,7 +147,28 @@ async function fetchDynamicData() {
                 }
                 
                 if (item.key === 'cv_url' && item.value) {
-                    document.querySelectorAll('.btn-cv').forEach(el => el.href = item.value);
+                    const pdfModal = document.getElementById('modalPdf');
+                    const mediaModal = document.getElementById('mediaModal');
+                    const modalImg = document.getElementById('modalImg');
+                    const modalVideo = document.getElementById('modalVideo');
+                    
+                    document.querySelectorAll('.cv-btn').forEach(el => {
+                        el.href = 'javascript:void(0)';
+                        el.onclick = (e) => {
+                            e.preventDefault();
+                            if (mediaModal && pdfModal) {
+                                mediaModal.style.display = 'block';
+                                document.body.style.overflow = 'hidden';
+                                if (modalImg) modalImg.style.display = 'none';
+                                if (modalVideo) { modalVideo.style.display = 'none'; modalVideo.pause(); }
+                                pdfModal.style.display = 'block';
+                                pdfModal.src = item.value;
+                            }
+                        };
+                    });
+                    
+                    const footerCvBtn = document.querySelector('.footer-content .btn-primary');
+                    if (footerCvBtn) footerCvBtn.href = item.value;
                 }
             });
         }
@@ -329,12 +350,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.dataset.type === 'video') {
                 const videoSrc = item.querySelector('video').src;
                 modalImg.style.display = 'none';
+                if (document.getElementById('modalPdf')) document.getElementById('modalPdf').style.display = 'none';
                 modalVideo.style.display = 'block';
                 modalVideo.src = videoSrc;
                 modalVideo.play();
             } else {
                 const imgSrc = item.querySelector('img').src;
                 modalVideo.style.display = 'none';
+                if (document.getElementById('modalPdf')) document.getElementById('modalPdf').style.display = 'none';
                 modalVideo.pause();
                 modalImg.style.display = 'block';
                 modalImg.src = imgSrc;
@@ -347,6 +370,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = 'auto';
         modalVideo.pause();
         modalVideo.removeAttribute('src');
+        const pdfModal = document.getElementById('modalPdf');
+        if (pdfModal) {
+            pdfModal.style.display = 'none';
+            pdfModal.removeAttribute('src');
+        }
     }
 
     closeBtn.addEventListener('click', closeModal);
