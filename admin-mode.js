@@ -29,15 +29,15 @@
     });
 
     // ===== 2. Edit Button for Intro =====
-    const heroText = document.querySelector('.hero-text');
-    if (heroText) {
-        heroText.style.position = 'relative';
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+        heroContent.style.position = 'relative';
         const editBtn = document.createElement('button');
         editBtn.className = 'admin-edit-btn';
         editBtn.innerHTML = '<i class="fas fa-pen"></i>';
         editBtn.title = 'Chỉnh sửa giới thiệu';
         editBtn.addEventListener('click', (e) => { e.stopPropagation(); openIntroEditor(); });
-        heroText.appendChild(editBtn);
+        heroContent.appendChild(editBtn);
     }
 
     // ===== 3. Album Controls =====
@@ -45,7 +45,6 @@
     if (albumSection) {
         const albumTitle = albumSection.querySelector('.section-title');
         if (albumTitle) {
-            // Add button container
             const controls = document.createElement('div');
             controls.className = 'admin-album-controls';
             controls.innerHTML = `
@@ -61,11 +60,10 @@
             });
         }
 
-        // Add delete buttons to dynamically-loaded Supabase items
-        // We use a MutationObserver to catch items added by fetchAlbumItems()
+        // Add controls to Supabase items via MutationObserver
         const grid = document.querySelector('.masonry-grid');
         if (grid) {
-            // Mark existing (hardcoded) items
+            // Mark existing hardcoded items
             grid.querySelectorAll('.masonry-item').forEach(item => {
                 item.dataset.source = 'local';
             });
@@ -75,7 +73,7 @@
                     m.addedNodes.forEach(node => {
                         if (node.classList && node.classList.contains('masonry-item') && !node.dataset.source) {
                             node.dataset.source = 'supabase';
-                            addDeleteButton(node);
+                            addItemControls(node);
                         }
                     });
                 });
@@ -128,6 +126,7 @@
     // FUNCTIONS
     // =========================================
 
+    // --- Intro Editor ---
     function openIntroEditor() {
         document.getElementById('adminModalTitle').textContent = 'Chỉnh sửa Giới thiệu';
         document.getElementById('adminModalBody').innerHTML = `
@@ -173,6 +172,74 @@
         }
     }
 
+    // --- Album: Add controls (delete + move) to each Supabase item ---
+    function addItemControls(element) {
+        element.style.position = 'relative';
+
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'admin-item-controls';
+        controlsDiv.innerHTML = `
+            <button class="admin-item-btn admin-item-move-left" title="Di chuyển sang trái">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <button class="admin-item-btn admin-item-move-right" title="Di chuyển sang phải">
+                <i class="fas fa-arrow-right"></i>
+            </button>
+            <button class="admin-item-btn admin-item-delete" title="Xóa">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+
+        // Delete
+        controlsDiv.querySelector('.admin-item-delete').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = element.dataset.id;
+            const fp = element.dataset.filePath;
+            deleteMedia(id, fp, element);
+        });
+
+        // Move Left
+        controlsDiv.querySelector('.admin-item-move-left').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const prev = element.previousElementSibling;
+            if (prev) {
+                element.parentNode.insertBefore(element, prev);
+                saveAlbumOrder();
+                showToast('Đã di chuyển!', 'info');
+            }
+        });
+
+        // Move Right
+        controlsDiv.querySelector('.admin-item-move-right').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const next = element.nextElementSibling;
+            if (next) {
+                element.parentNode.insertBefore(next, element);
+                saveAlbumOrder();
+                showToast('Đã di chuyển!', 'info');
+            }
+        });
+
+        element.appendChild(controlsDiv);
+    }
+
+    // --- Save album order to Supabase ---
+    async function saveAlbumOrder() {
+        const grid = document.querySelector('.masonry-grid');
+        if (!grid) return;
+
+        const items = grid.querySelectorAll('.masonry-item[data-source="supabase"]');
+        let order = 0;
+        for (const item of items) {
+            const id = item.dataset.id;
+            if (id) {
+                await sb.from('album_items').update({ sort_order: order }).eq('id', parseInt(id));
+                order++;
+            }
+        }
+    }
+
+    // --- Upload Media ---
     async function uploadMedia(files) {
         const total = files.length;
         let uploaded = 0;
@@ -201,7 +268,6 @@
 
                 if (insertErr) { showToast('Lỗi DB: ' + insertErr.message, 'error'); continue; }
 
-                // Add to page
                 const itemData = insertData ? insertData[0] : { type, url: urlData.publicUrl, file_path: fileName };
                 addItemToGrid(itemData);
 
@@ -238,7 +304,7 @@
             div.innerHTML = `<img loading="lazy" src="${item.url}" alt="Album Image">`;
         }
 
-        addDeleteButton(div);
+        addItemControls(div);
 
         // Modal click
         div.addEventListener('click', () => {
@@ -263,26 +329,12 @@
         grid.appendChild(div);
     }
 
-    function addDeleteButton(element) {
-        const delBtn = document.createElement('button');
-        delBtn.className = 'admin-item-delete';
-        delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-        delBtn.title = 'Xóa ảnh/video này';
-        delBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const id = element.dataset.id;
-            const fp = element.dataset.filePath;
-            deleteMedia(id, fp, element);
-        });
-        element.style.position = 'relative';
-        element.appendChild(delBtn);
-    }
-
+    // --- Delete Media ---
     async function deleteMedia(id, filePath, element) {
         if (!confirm('Bạn có chắc chắn muốn xóa ảnh/video này?')) return;
         try {
             if (filePath) await sb.storage.from('media').remove([filePath]);
-            if (id) await sb.from('album_items').delete().eq('id', id);
+            if (id) await sb.from('album_items').delete().eq('id', parseInt(id));
             element.style.transition = '0.3s';
             element.style.opacity = '0';
             element.style.transform = 'scale(0.8)';
@@ -293,6 +345,7 @@
         }
     }
 
+    // --- Helpers ---
     function closeModal() { modalOverlay.style.display = 'none'; }
 
     function showToast(msg, type = 'success') {

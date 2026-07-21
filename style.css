@@ -931,13 +931,23 @@ body.admin-mode .navbar { top: 48px; }
     box-shadow: 0 6px 25px rgba(167,208,246,0.5);
 }
 
-/* Delete button on album items */
-.admin-item-delete {
+/* Admin Item Controls (Move/Delete on Album items) */
+.admin-item-controls {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(231,76,60,0.85);
-    color: white;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: 0.3s;
+    z-index: 10;
+}
+
+.masonry-item:hover .admin-item-controls { opacity: 1; }
+
+.admin-item-btn {
+    background: rgba(255,255,255,0.85);
+    color: #2b2a2a;
     border: none;
     border-radius: 50%;
     width: 32px;
@@ -947,13 +957,18 @@ body.admin-mode .navbar { top: 48px; }
     align-items: center;
     justify-content: center;
     font-size: 0.75rem;
-    opacity: 0;
     transition: 0.3s;
-    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-.masonry-item:hover .admin-item-delete { opacity: 1; }
-.admin-item-delete:hover { background: #e74c3c; transform: scale(1.15); }
+.admin-item-btn:hover { background: white; transform: scale(1.15); }
+
+.admin-item-delete {
+    background: rgba(231,76,60,0.85);
+    color: white;
+}
+
+.admin-item-delete:hover { background: #e74c3c; }
 
 /* Admin Modal */
 .admin-modal-overlay {
