@@ -152,7 +152,7 @@ async function fetchDynamicData() {
                     const modalImg = document.getElementById('modalImg');
                     const modalVideo = document.getElementById('modalVideo');
                     
-                    document.querySelectorAll('.cv-btn').forEach(el => {
+                    document.querySelectorAll('.btn-cv').forEach(el => {
                         el.href = 'javascript:void(0)';
                         el.onclick = (e) => {
                             e.preventDefault();
