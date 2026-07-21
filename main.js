@@ -474,21 +474,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 7. Typewriter Effect
+    // 7. Staggered Text Reveal
     const typewriterElement = document.getElementById('typewriter');
     if (typewriterElement) {
         const text = "HÀ NGỌC";
-        let index = 0;
+        typewriterElement.innerHTML = '';
+        const words = text.split(' ');
         
-        function type() {
-            if (index < text.length) {
-                typewriterElement.innerHTML += text.charAt(index);
-                index++;
-                setTimeout(type, 200);
+        words.forEach((word, wordIndex) => {
+            const wordSpan = document.createElement('span');
+            wordSpan.className = 'word';
+            wordSpan.style.display = 'inline-block';
+            
+            word.split('').forEach((char, charIndex) => {
+                const charSpan = document.createElement('span');
+                charSpan.className = 'staggered-letter';
+                // Calculate delay based on absolute letter index (simplified by just using order)
+                charSpan.style.animationDelay = `${(wordIndex * 5 + charIndex) * 0.1}s`;
+                if (char === ' ') {
+                    charSpan.innerHTML = '&nbsp;';
+                } else {
+                    charSpan.innerText = char;
+                }
+                wordSpan.appendChild(charSpan);
+            });
+            
+            typewriterElement.appendChild(wordSpan);
+            
+            // Add space between words
+            if (wordIndex < words.length - 1) {
+                const space = document.createElement('span');
+                space.innerHTML = '&nbsp;';
+                typewriterElement.appendChild(space);
             }
-        }
-        
-        setTimeout(type, 500);
+        });
     }
 
     // 8. Language Switch (EN / VI)
