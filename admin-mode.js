@@ -370,7 +370,7 @@
                     btnUploadCv.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     btnUploadCv.disabled = true;
                     try {
-                        const fileName = \`cv_\${Date.now()}.pdf\`;
+                        const fileName = `cv_${Date.now()}.pdf`;
                         const { error } = await sb.storage.from('media').upload(fileName, file, { cacheControl: '3600' });
                         if (error) throw error;
                         const { data: urlData } = sb.storage.from('media').getPublicUrl(fileName);

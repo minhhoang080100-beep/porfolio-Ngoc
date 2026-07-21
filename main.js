@@ -470,26 +470,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== Admin Mode Detection =====
     if (sessionStorage.getItem('adminMode') === 'true') {
-        const supaScript = document.createElement('script');
-        supaScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-        
-        const sortableScript = document.createElement('script');
-        sortableScript.src = 'https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js';
-        
-        let loaded = 0;
-        const initAdmin = () => {
-            loaded++;
-            if (loaded === 2) {
-                const adminScript = document.createElement('script');
-                adminScript.src = 'admin-mode.js';
-                document.head.appendChild(adminScript);
-            }
-        };
+        const loadScript = (src) => new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = resolve; // proceed even if it fails (e.g. adblocker)
+            document.head.appendChild(script);
+        });
 
-        supaScript.onload = initAdmin;
-        sortableScript.onload = initAdmin;
-
-        document.head.appendChild(supaScript);
-        document.head.appendChild(sortableScript);
+        Promise.all([
+            loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'),
+            loadScript('https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js')
+        ]).then(() => {
+            const adminScript = document.createElement('script');
+            adminScript.src = 'admin-mode.js';
+            document.head.appendChild(adminScript);
+        });
     }
 });
