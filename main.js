@@ -1,7 +1,11 @@
 // main.js
 
+// --- Supabase Config (for dynamic data) ---
+const SUPABASE_URL = 'https://ppzosahycxznuxeerfts.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ff32PbO6HnaGMkqmEXP_WA_pPc4TMNn';
+
 // --- i18n Translations ---
-const translations = {
+let translations = {
     vi: {
         nav_about: "Giới thiệu",
         nav_experience: "Kinh nghiệm",
@@ -74,7 +78,79 @@ function applyLanguage(lang) {
     });
 }
 
+// --- Fetch dynamic data from Supabase (no library needed) ---
+async function fetchDynamicData() {
+    try {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/settings?select=*', {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        data.forEach(item => {
+            if (item.key === 'intro_vi' && item.value) translations.vi.hero_intro = item.value;
+            if (item.key === 'intro_en' && item.value) translations.en.hero_intro = item.value;
+        });
+        // Re-apply current language
+        const lang = localStorage.getItem('portfolioLang') || 'en';
+        applyLanguage(lang);
+    } catch (e) {
+        console.log('Dynamic data fetch skipped:', e.message);
+    }
+}
+
+async function fetchAlbumItems() {
+    try {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/album_items?select=*&order=sort_order', {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        });
+        if (!res.ok) return;
+        const items = await res.json();
+        const grid = document.querySelector('.masonry-grid');
+        if (!grid || items.length === 0) return;
+
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'masonry-item';
+            if (item.type === 'video') {
+                div.dataset.type = 'video';
+                div.innerHTML = '<video src="' + item.url + '" autoplay loop muted playsinline></video>';
+            } else {
+                div.innerHTML = '<img loading="lazy" src="' + item.url + '" alt="Album Image">';
+            }
+            grid.appendChild(div);
+
+            // Add click event for modal (same as existing items)
+            const modal = document.getElementById('mediaModal');
+            const modalImg = document.getElementById('modalImg');
+            const modalVideo = document.getElementById('modalVideo');
+            div.addEventListener('click', () => {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                if (item.type === 'video') {
+                    modalImg.style.display = 'none';
+                    modalVideo.style.display = 'block';
+                    modalVideo.src = item.url;
+                    modalVideo.play();
+                } else {
+                    modalVideo.style.display = 'none';
+                    modalVideo.pause();
+                    modalImg.style.display = 'block';
+                    modalImg.src = item.url;
+                }
+            });
+        });
+    } catch (e) {
+        console.log('Album fetch skipped:', e.message);
+    }
+}
+
+// Load dynamic data on page load
+fetchDynamicData();
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Fetch album items after DOM ready
+    fetchAlbumItems();
+
     // 1. Navbar Scroll Effect
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
