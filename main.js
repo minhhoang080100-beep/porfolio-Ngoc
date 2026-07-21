@@ -326,4 +326,16 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('portfolioLang', currentLang);
         });
     }
+
+    // ===== Admin Mode Detection =====
+    if (sessionStorage.getItem('adminMode') === 'true') {
+        const supaScript = document.createElement('script');
+        supaScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+        supaScript.onload = () => {
+            const adminScript = document.createElement('script');
+            adminScript.src = 'admin-mode.js';
+            document.head.appendChild(adminScript);
+        };
+        document.head.appendChild(supaScript);
+    }
 });

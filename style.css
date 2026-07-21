@@ -824,3 +824,326 @@ h1, h2, h3, h4 {
     color: var(--primary-color);
     transform: scale(1.05);
 }
+
+/* ===================================
+   ADMIN MODE STYLES
+   =================================== */
+
+body.admin-mode { padding-top: 48px; }
+
+/* Admin Top Bar */
+.admin-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 48px;
+    background: linear-gradient(135deg, #2b2a2a, #1a1a2e);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.5rem;
+    z-index: 10000;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+}
+
+.admin-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.admin-bar-exit {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-bar-exit:hover { background: rgba(231,76,60,0.8); border-color: transparent; }
+
+/* Edit Button (Pen Icon) */
+.admin-edit-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #a7d0f6;
+    color: #2b2a2a;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 3px 12px rgba(167,208,246,0.4);
+    transition: 0.3s;
+    z-index: 100;
+    animation: pulseGlow 2s infinite;
+}
+
+.admin-edit-btn:hover {
+    transform: scale(1.15);
+    box-shadow: 0 5px 20px rgba(167,208,246,0.6);
+}
+
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 3px 12px rgba(167,208,246,0.4); }
+    50% { box-shadow: 0 3px 20px rgba(167,208,246,0.7); }
+}
+
+/* Album Controls */
+.admin-album-controls {
+    text-align: center;
+    margin: 1rem 0 1.5rem;
+}
+
+.admin-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #a7d0f6, #7bb8e8);
+    color: #2b2a2a;
+    padding: 0.7rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(167,208,246,0.3);
+}
+
+.admin-add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(167,208,246,0.5);
+}
+
+/* Delete button on album items */
+.admin-item-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(231,76,60,0.85);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: 0.3s;
+    z-index: 10;
+}
+
+.masonry-item:hover .admin-item-delete { opacity: 1; }
+.admin-item-delete:hover { background: #e74c3c; transform: scale(1.15); }
+
+/* Admin Modal */
+.admin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    animation: fadeInModal 0.25s ease;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.admin-modal {
+    background: white;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: slideUpModal 0.3s ease;
+}
+
+@keyframes slideUpModal {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.admin-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-modal-header h3 {
+    font-size: 1.2rem;
+    color: #2b2a2a;
+}
+
+.admin-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #999;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-modal-close:hover { background: #f5f5f5; color: #2b2a2a; }
+
+.admin-modal-body { padding: 1.5rem 2rem; }
+
+.admin-modal-footer {
+    padding: 1rem 2rem 1.5rem;
+    text-align: right;
+}
+
+.admin-form-group {
+    margin-bottom: 1.2rem;
+}
+
+.admin-form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.admin-form-group textarea {
+    width: 100%;
+    padding: 0.9rem;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    resize: vertical;
+    color: #2b2a2a;
+    line-height: 1.6;
+    transition: 0.3s;
+}
+
+.admin-form-group textarea:focus { outline: none; border-color: #a7d0f6; }
+
+.admin-save-btn {
+    background: #a7d0f6;
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-save-btn:hover { background: #2b2a2a; }
+.admin-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Upload Progress */
+.admin-upload-progress {
+    position: fixed;
+    bottom: 70px;
+    right: 2rem;
+    background: white;
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 10000;
+    min-width: 200px;
+}
+
+.admin-progress-fill {
+    width: 0%;
+    height: 4px;
+    background: linear-gradient(90deg, #a7d0f6, #7bb8e8);
+    border-radius: 2px;
+    transition: width 0.3s;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.admin-progress-text {
+    font-size: 0.8rem;
+    color: #555;
+    font-weight: 600;
+}
+
+/* Toast */
+.admin-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 0.9rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    z-index: 10002;
+}
+
+.admin-toast.success { background: #2ecc71; color: white; }
+.admin-toast.error { background: #e74c3c; color: white; }
+.admin-toast.info { background: #3498db; color: white; }
+.admin-toast.show { transform: translateY(0); opacity: 1; }
+
+/* Spinner */
+.admin-spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* Dark Mode overrides for admin */
+[data-theme="dark"] .admin-modal { background: #1e1e1e; }
+[data-theme="dark"] .admin-modal-header { border-color: #333; }
+[data-theme="dark"] .admin-modal-header h3 { color: #e0e0e0; }
+[data-theme="dark"] .admin-form-group label { color: #aaa; }
+[data-theme="dark"] .admin-form-group textarea {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+}
+[data-theme="dark"] .admin-form-group textarea:focus { border-color: #a7d0f6; }
+[data-theme="dark"] .admin-upload-progress { background: #2a2a2a; }
+[data-theme="dark"] .admin-progress-text { color: #ccc; }
