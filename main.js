@@ -70,29 +70,136 @@ function applyLanguage(lang) {
     const t = translations[lang];
     if (!t) return;
 
+    // Static translations
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (t[key]) {
             el.textContent = t[key];
         }
     });
+
+    // Dynamic translations (Supabase)
+    document.querySelectorAll('[data-vi][data-en]').forEach(el => {
+        el.textContent = el.getAttribute('data-' + lang);
+    });
 }
 
-// --- Fetch dynamic data from Supabase (no library needed) ---
+// --- Fetch dynamic data from Supabase ---
 async function fetchDynamicData() {
     try {
-        const res = await fetch(SUPABASE_URL + '/rest/v1/settings?select=*', {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        data.forEach(item => {
-            if (item.key === 'intro_vi' && item.value) translations.vi.hero_intro = item.value;
-            if (item.key === 'intro_en' && item.value) translations.en.hero_intro = item.value;
-        });
+        const headers = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+
+        // 1. Settings
+        const resSettings = await fetch(SUPABASE_URL + '/rest/v1/settings?select=*', { headers });
+        if (resSettings.ok) {
+            const data = await resSettings.json();
+            data.forEach(item => {
+                if (item.key === 'intro_vi' && item.value) translations.vi.hero_intro = item.value;
+                if (item.key === 'intro_en' && item.value) translations.en.hero_intro = item.value;
+                if (item.key === 'hero_subtitle' && item.value) {
+                    translations.vi.hero_subtitle = item.value;
+                    translations.en.hero_subtitle = item.value;
+                }
+                
+                // Contact info updates
+                const contactInfo = document.getElementById('contactInfo');
+                if (contactInfo) {
+                    if (item.key === 'contact_phone' && item.value) {
+                        let el = document.getElementById('phoneItem');
+                        if (!el) {
+                            el = document.createElement('a');
+                            el.id = 'phoneItem';
+                            el.className = 'contact-item';
+                            el.innerHTML = `<i class="fas fa-phone-alt"></i><span></span>`;
+                            contactInfo.appendChild(el);
+                        }
+                        el.href = 'tel:' + item.value.replace(/\s+/g, '');
+                        el.querySelector('span').textContent = item.value;
+                    }
+                    if (item.key === 'contact_email' && item.value) {
+                        let el = document.getElementById('emailItem');
+                        if (!el) {
+                            el = document.createElement('a');
+                            el.id = 'emailItem';
+                            el.className = 'contact-item';
+                            el.innerHTML = `<i class="fas fa-envelope"></i><span></span>`;
+                            contactInfo.appendChild(el);
+                        }
+                        el.href = 'mailto:' + item.value;
+                        el.querySelector('span').textContent = item.value;
+                    }
+                    if (item.key === 'contact_fb' && item.value) {
+                        let el = document.getElementById('fbItem');
+                        if (!el) {
+                            el = document.createElement('a');
+                            el.id = 'fbItem';
+                            el.className = 'contact-item';
+                            el.target = '_blank';
+                            el.innerHTML = `<i class="fab fa-facebook"></i><span>Hà Ngọc (Facebook)</span>`;
+                            contactInfo.appendChild(el);
+                        }
+                        el.href = item.value;
+                    }
+                }
+                
+                if (item.key === 'cv_url' && item.value) {
+                    document.querySelectorAll('.btn-cv').forEach(el => el.href = item.value);
+                }
+            });
+        }
+
+        // 2. Experience
+        const resExp = await fetch(SUPABASE_URL + '/rest/v1/experience_items?select=*&order=sort_order', { headers });
+        if (resExp.ok) {
+            const exps = await resExp.json();
+            const expGrid = document.getElementById('experienceGrid');
+            if (expGrid) {
+                expGrid.innerHTML = '';
+                exps.forEach(exp => {
+                    const div = document.createElement('div');
+                    div.className = 'timeline-item';
+                    div.dataset.source = 'supabase';
+                    div.dataset.id = exp.id;
+                    div.innerHTML = `
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>${exp.company}</h3>
+                            <p class="role" data-vi="${exp.role_vi}" data-en="${exp.role_en}">${exp.role_vi}</p>
+                            <span class="year">${exp.year}</span>
+                        </div>
+                    `;
+                    expGrid.appendChild(div);
+                });
+            }
+        }
+
+        // 3. Skills
+        const resSkills = await fetch(SUPABASE_URL + '/rest/v1/skill_items?select=*&order=sort_order', { headers });
+        if (resSkills.ok) {
+            const skills = await resSkills.json();
+            const skillsGrid = document.getElementById('skillsGrid');
+            if (skillsGrid) {
+                skillsGrid.innerHTML = '';
+                skills.forEach(skill => {
+                    const div = document.createElement('div');
+                    div.className = 'skill-card';
+                    div.dataset.source = 'supabase';
+                    div.dataset.id = skill.id;
+                    div.innerHTML = `
+                        <i class="${skill.icon_class} skill-icon"></i>
+                        <h3>${skill.title_en}</h3>
+                        <p data-vi="${skill.desc_vi}" data-en="${skill.desc_en}">${skill.desc_vi}</p>
+                    `;
+                    skillsGrid.appendChild(div);
+                });
+            }
+        }
+
         // Re-apply current language
         const lang = localStorage.getItem('portfolioLang') || 'en';
         applyLanguage(lang);
+
+        window.dispatchEvent(new Event('dynamicDataLoaded'));
     } catch (e) {
         console.log('Dynamic data fetch skipped:', e.message);
     }
@@ -111,6 +218,7 @@ async function fetchAlbumItems() {
         items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'masonry-item';
+            div.dataset.category = item.category || 'all';
             if (item.type === 'video') {
                 div.dataset.type = 'video';
                 div.innerHTML = '<video src="' + item.url + '" autoplay loop muted playsinline></video>';
@@ -119,7 +227,7 @@ async function fetchAlbumItems() {
             }
             grid.appendChild(div);
 
-            // Add click event for modal (same as existing items)
+            // Add click event for modal
             const modal = document.getElementById('mediaModal');
             const modalImg = document.getElementById('modalImg');
             const modalVideo = document.getElementById('modalVideo');
@@ -139,6 +247,7 @@ async function fetchAlbumItems() {
                 }
             });
         });
+        window.dispatchEvent(new Event('albumLoaded'));
     } catch (e) {
         console.log('Album fetch skipped:', e.message);
     }

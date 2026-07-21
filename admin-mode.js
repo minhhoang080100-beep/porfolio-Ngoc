@@ -28,23 +28,111 @@
         window.location.reload();
     });
 
-    // ===== 2. Edit Button for Intro =====
-    const heroContent = document.querySelector('.hero-content');
-    if (heroContent) {
-        heroContent.style.position = 'relative';
-        const editBtn = document.createElement('button');
-        editBtn.className = 'admin-edit-btn';
-        editBtn.innerHTML = '<i class="fas fa-pen"></i>';
-        editBtn.title = 'Chỉnh sửa giới thiệu';
-        editBtn.addEventListener('click', (e) => { e.stopPropagation(); openIntroEditor(); });
-        heroContent.appendChild(editBtn);
+    // ===== Initialize all controls once dynamic data is loaded =====
+    window.addEventListener('dynamicDataLoaded', () => {
+        setupHeroAdmin();
+        setupContactAdmin();
+        setupExperienceAdmin();
+        setupSkillsAdmin();
+    });
+
+    // We also need to setup album controls when album loads
+    window.addEventListener('albumLoaded', () => {
+        setupAlbumAdmin();
+    });
+
+    // Fallback if events were fired before admin-mode loaded
+    setTimeout(() => {
+        setupHeroAdmin();
+        setupContactAdmin();
+        setupExperienceAdmin();
+        setupSkillsAdmin();
+        setupAlbumAdmin();
+    }, 1500);
+
+    // =========================================
+    // SECTION SETUPS
+    // =========================================
+
+    function setupHeroAdmin() {
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent && !heroContent.querySelector('.admin-edit-btn')) {
+            heroContent.style.position = 'relative';
+            const editBtn = document.createElement('button');
+            editBtn.className = 'admin-edit-btn';
+            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+            editBtn.title = 'Chỉnh sửa Giới thiệu';
+            editBtn.addEventListener('click', (e) => { e.stopPropagation(); openIntroEditor(); });
+            heroContent.appendChild(editBtn);
+        }
     }
 
-    // ===== 3. Album Controls =====
-    const albumSection = document.getElementById('album');
-    if (albumSection) {
+    function setupContactAdmin() {
+        const contactSection = document.querySelector('.contact-container');
+        if (contactSection && !contactSection.querySelector('.admin-edit-btn')) {
+            contactSection.style.position = 'relative';
+            const editBtn = document.createElement('button');
+            editBtn.className = 'admin-edit-btn';
+            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+            editBtn.title = 'Chỉnh sửa Thông tin liên hệ';
+            editBtn.addEventListener('click', (e) => { e.stopPropagation(); openContactEditor(); });
+            contactSection.appendChild(editBtn);
+        }
+    }
+
+    function setupExperienceAdmin() {
+        const expSection = document.getElementById('experience');
+        if (!expSection) return;
+        const title = expSection.querySelector('.section-title');
+        if (title && !expSection.querySelector('.admin-add-btn')) {
+            const controls = document.createElement('div');
+            controls.className = 'admin-album-controls';
+            controls.innerHTML = `
+                <button class="admin-add-btn" id="btnAddExp">
+                    <i class="fas fa-plus-circle"></i> Thêm Kinh Nghiệm
+                </button>
+            `;
+            title.after(controls);
+            document.getElementById('btnAddExp').addEventListener('click', () => openExpEditor());
+        }
+
+        const items = expSection.querySelectorAll('.timeline-item');
+        items.forEach(item => {
+            if (!item.querySelector('.admin-item-controls')) {
+                addExpControls(item);
+            }
+        });
+    }
+
+    function setupSkillsAdmin() {
+        const skillsSection = document.getElementById('skills');
+        if (!skillsSection) return;
+        const title = skillsSection.querySelector('.section-title');
+        if (title && !skillsSection.querySelector('.admin-add-btn')) {
+            const controls = document.createElement('div');
+            controls.className = 'admin-album-controls';
+            controls.innerHTML = `
+                <button class="admin-add-btn" id="btnAddSkill">
+                    <i class="fas fa-plus-circle"></i> Thêm Kỹ Năng
+                </button>
+            `;
+            title.after(controls);
+            document.getElementById('btnAddSkill').addEventListener('click', () => openSkillEditor());
+        }
+
+        const items = skillsSection.querySelectorAll('.skill-card');
+        items.forEach(item => {
+            if (!item.querySelector('.admin-item-controls')) {
+                addSkillControls(item);
+            }
+        });
+    }
+
+    function setupAlbumAdmin() {
+        const albumSection = document.getElementById('album');
+        if (!albumSection) return;
         const albumTitle = albumSection.querySelector('.section-title');
-        if (albumTitle) {
+        if (albumTitle && !albumSection.querySelector('.admin-add-btn')) {
             const controls = document.createElement('div');
             controls.className = 'admin-album-controls';
             controls.innerHTML = `
@@ -54,35 +142,22 @@
                 </label>
             `;
             albumTitle.after(controls);
-
             document.getElementById('adminFileInput').addEventListener('change', function() {
                 if (this.files.length > 0) uploadMedia(this.files);
             });
         }
 
-        // Add controls to Supabase items via MutationObserver
-        const grid = document.querySelector('.masonry-grid');
-        if (grid) {
-            // Mark existing hardcoded items
-            grid.querySelectorAll('.masonry-item').forEach(item => {
-                item.dataset.source = 'local';
-            });
-
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach(m => {
-                    m.addedNodes.forEach(node => {
-                        if (node.classList && node.classList.contains('masonry-item') && !node.dataset.source) {
-                            node.dataset.source = 'supabase';
-                            addItemControls(node);
-                        }
-                    });
-                });
-            });
-            observer.observe(grid, { childList: true });
-        }
+        const items = document.querySelectorAll('.masonry-item');
+        items.forEach(item => {
+            if (!item.querySelector('.admin-item-controls')) {
+                addItemControls(item);
+            }
+        });
     }
 
-    // ===== 4. Create Modal =====
+    // =========================================
+    // MODAL HTML
+    // =========================================
     const modalOverlay = document.createElement('div');
     modalOverlay.className = 'admin-modal-overlay';
     modalOverlay.style.display = 'none';
@@ -97,7 +172,7 @@
             <div class="admin-modal-body" id="adminModalBody"></div>
             <div class="admin-modal-footer">
                 <button class="admin-save-btn" id="adminModalSave">
-                    <i class="fas fa-save"></i> Lưu thay đổi
+                    <i class="fas fa-save"></i> Lưu
                 </button>
             </div>
         </div>
@@ -107,12 +182,357 @@
     document.getElementById('adminModalClose').addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
 
-    // ===== 5. Toast =====
     const toastEl = document.createElement('div');
     toastEl.className = 'admin-toast';
     document.body.appendChild(toastEl);
 
-    // ===== 6. Upload Progress =====
+    // =========================================
+    // HERO / INTRO EDITOR
+    // =========================================
+    function openIntroEditor() {
+        document.getElementById('adminModalTitle').textContent = 'Giới thiệu & Chức danh';
+        document.getElementById('adminModalBody').innerHTML = `
+            <div class="admin-form-group">
+                <label>Chức danh (VD: DIGITAL CREATOR & TALENT)</label>
+                <input type="text" id="editSubtitle" class="admin-input" value="${translations.vi.hero_subtitle || 'DIGITAL CREATOR & TALENT'}">
+            </div>
+            <div class="admin-form-group">
+                <label><i class="fas fa-flag"></i> Giới thiệu (Tiếng Việt)</label>
+                <textarea id="editIntroVi" rows="5">${translations.vi.hero_intro || ''}</textarea>
+            </div>
+            <div class="admin-form-group">
+                <label><i class="fas fa-globe"></i> Giới thiệu (English)</label>
+                <textarea id="editIntroEn" rows="5">${translations.en.hero_intro || ''}</textarea>
+            </div>
+        `;
+        document.getElementById('adminModalSave').onclick = async () => {
+            const btn = document.getElementById('adminModalSave');
+            btn.disabled = true; btn.innerHTML = 'Đang lưu...';
+            try {
+                const sub = document.getElementById('editSubtitle').value.trim();
+                const vi = document.getElementById('editIntroVi').value.trim();
+                const en = document.getElementById('editIntroEn').value.trim();
+                
+                await sb.from('settings').upsert({ key: 'hero_subtitle', value: sub }, { onConflict: 'key' });
+                await sb.from('settings').upsert({ key: 'intro_vi', value: vi }, { onConflict: 'key' });
+                await sb.from('settings').upsert({ key: 'intro_en', value: en }, { onConflict: 'key' });
+                
+                showToast('Đã lưu! Tải lại trang để xem thay đổi.');
+                closeModal();
+                setTimeout(() => window.location.reload(), 1500);
+            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Lưu';
+        };
+        modalOverlay.style.display = 'flex';
+    }
+
+    // =========================================
+    // CONTACT EDITOR
+    // =========================================
+    function openContactEditor() {
+        document.getElementById('adminModalTitle').textContent = 'Thông tin liên hệ & CV';
+        document.getElementById('adminModalBody').innerHTML = `
+            <div class="admin-form-group">
+                <label>Số điện thoại</label>
+                <input type="text" id="editPhone" class="admin-input">
+            </div>
+            <div class="admin-form-group">
+                <label>Email</label>
+                <input type="text" id="editEmail" class="admin-input">
+            </div>
+            <div class="admin-form-group">
+                <label>Link Facebook</label>
+                <input type="text" id="editFb" class="admin-input">
+            </div>
+            <div class="admin-form-group">
+                <label>Link CV (hoặc tên file PDF)</label>
+                <input type="text" id="editCv" class="admin-input">
+            </div>
+        `;
+        // Pre-fill
+        const pEl = document.getElementById('phoneItem');
+        if (pEl) document.getElementById('editPhone').value = pEl.textContent.trim();
+        const eEl = document.getElementById('emailItem');
+        if (eEl) document.getElementById('editEmail').value = eEl.textContent.trim();
+        const fEl = document.getElementById('fbItem');
+        if (fEl) document.getElementById('editFb').value = fEl.href;
+        const cvEl = document.querySelector('.btn-cv');
+        if (cvEl) document.getElementById('editCv').value = cvEl.getAttribute('href');
+
+        document.getElementById('adminModalSave').onclick = async () => {
+            const btn = document.getElementById('adminModalSave');
+            btn.disabled = true; btn.innerHTML = 'Đang lưu...';
+            try {
+                await sb.from('settings').upsert({ key: 'contact_phone', value: document.getElementById('editPhone').value.trim() }, { onConflict: 'key' });
+                await sb.from('settings').upsert({ key: 'contact_email', value: document.getElementById('editEmail').value.trim() }, { onConflict: 'key' });
+                await sb.from('settings').upsert({ key: 'contact_fb', value: document.getElementById('editFb').value.trim() }, { onConflict: 'key' });
+                await sb.from('settings').upsert({ key: 'cv_url', value: document.getElementById('editCv').value.trim() }, { onConflict: 'key' });
+                
+                showToast('Đã lưu! Tải lại trang để xem thay đổi.');
+                closeModal();
+                setTimeout(() => window.location.reload(), 1500);
+            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Lưu';
+        };
+        modalOverlay.style.display = 'flex';
+    }
+
+    // =========================================
+    // EXPERIENCE CONTROLS
+    // =========================================
+    function addExpControls(element) {
+        element.style.position = 'relative';
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'admin-item-controls';
+        controlsDiv.style.top = '10px'; controlsDiv.style.right = '10px';
+        controlsDiv.innerHTML = `
+            <button class="admin-item-btn admin-item-move-left" title="Đưa lên trên"><i class="fas fa-arrow-up"></i></button>
+            <button class="admin-item-btn admin-item-move-right" title="Đưa xuống dưới"><i class="fas fa-arrow-down"></i></button>
+            <button class="admin-item-btn admin-item-edit" title="Sửa"><i class="fas fa-pen"></i></button>
+            <button class="admin-item-btn admin-item-delete" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+        `;
+
+        controlsDiv.querySelector('.admin-item-edit').addEventListener('click', (e) => {
+            e.stopPropagation(); openExpEditor(element.dataset.id, element);
+        });
+        controlsDiv.querySelector('.admin-item-delete').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (confirm('Xóa mốc kinh nghiệm này?')) {
+                await sb.from('experience_items').delete().eq('id', element.dataset.id);
+                element.remove(); showToast('Đã xóa!');
+            }
+        });
+        controlsDiv.querySelector('.admin-item-move-left').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const prev = element.previousElementSibling;
+            if (prev) { element.parentNode.insertBefore(element, prev); saveExpOrder(); }
+        });
+        controlsDiv.querySelector('.admin-item-move-right').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const next = element.nextElementSibling;
+            if (next) { element.parentNode.insertBefore(next, element); saveExpOrder(); }
+        });
+
+        element.appendChild(controlsDiv);
+    }
+
+    async function saveExpOrder() {
+        const items = document.querySelectorAll('#experienceGrid .timeline-item');
+        let order = 0;
+        for (const item of items) {
+            await sb.from('experience_items').update({ sort_order: order }).eq('id', item.dataset.id);
+            order++;
+        }
+    }
+
+    function openExpEditor(id = null, element = null) {
+        document.getElementById('adminModalTitle').textContent = id ? 'Sửa Kinh Nghiệm' : 'Thêm Kinh Nghiệm';
+        document.getElementById('adminModalBody').innerHTML = `
+            <div class="admin-form-group">
+                <label>Tên Đơn Vị / Công Ty</label>
+                <input type="text" id="expCompany" class="admin-input">
+            </div>
+            <div class="admin-form-group">
+                <label>Năm (VD: 2025 hoặc 2024 - Hiện tại)</label>
+                <input type="text" id="expYear" class="admin-input">
+            </div>
+            <div class="admin-form-group">
+                <label>Vai trò (Tiếng Việt)</label>
+                <input type="text" id="expRoleVi" class="admin-input">
+            </div>
+            <div class="admin-form-group">
+                <label>Vai trò (English)</label>
+                <input type="text" id="expRoleEn" class="admin-input">
+            </div>
+        `;
+
+        if (element) {
+            document.getElementById('expCompany').value = element.querySelector('h3').textContent;
+            document.getElementById('expYear').value = element.querySelector('.year').textContent;
+            document.getElementById('expRoleVi').value = element.querySelector('.role').getAttribute('data-vi');
+            document.getElementById('expRoleEn').value = element.querySelector('.role').getAttribute('data-en');
+        }
+
+        document.getElementById('adminModalSave').onclick = async () => {
+            const data = {
+                company: document.getElementById('expCompany').value.trim(),
+                year: document.getElementById('expYear').value.trim(),
+                role_vi: document.getElementById('expRoleVi').value.trim(),
+                role_en: document.getElementById('expRoleEn').value.trim()
+            };
+            if (!data.company || !data.role_vi) return showToast('Vui lòng điền đủ thông tin!', 'error');
+
+            const btn = document.getElementById('adminModalSave');
+            btn.disabled = true; btn.innerHTML = 'Đang lưu...';
+            try {
+                if (id) {
+                    await sb.from('experience_items').update(data).eq('id', id);
+                } else {
+                    const { data: max } = await sb.from('experience_items').select('sort_order').order('sort_order', {ascending: false}).limit(1);
+                    data.sort_order = max && max.length ? max[0].sort_order + 1 : 0;
+                    await sb.from('experience_items').insert(data);
+                }
+                showToast('Đã lưu thành công!');
+                closeModal();
+                setTimeout(() => window.location.reload(), 1000);
+            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+        };
+        modalOverlay.style.display = 'flex';
+    }
+
+    // =========================================
+    // SKILLS CONTROLS
+    // =========================================
+    function addSkillControls(element) {
+        element.style.position = 'relative';
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'admin-item-controls';
+        controlsDiv.style.top = '10px'; controlsDiv.style.right = '10px';
+        controlsDiv.innerHTML = `
+            <button class="admin-item-btn admin-item-move-left" title="Chuyển lên"><i class="fas fa-arrow-left"></i></button>
+            <button class="admin-item-btn admin-item-move-right" title="Chuyển xuống"><i class="fas fa-arrow-right"></i></button>
+            <button class="admin-item-btn admin-item-edit" title="Sửa"><i class="fas fa-pen"></i></button>
+            <button class="admin-item-btn admin-item-delete" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+        `;
+
+        controlsDiv.querySelector('.admin-item-edit').addEventListener('click', (e) => {
+            e.stopPropagation(); openSkillEditor(element.dataset.id, element);
+        });
+        controlsDiv.querySelector('.admin-item-delete').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (confirm('Xóa kỹ năng này?')) {
+                await sb.from('skill_items').delete().eq('id', element.dataset.id);
+                element.remove(); showToast('Đã xóa!');
+            }
+        });
+        controlsDiv.querySelector('.admin-item-move-left').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const prev = element.previousElementSibling;
+            if (prev) { element.parentNode.insertBefore(element, prev); saveSkillOrder(); }
+        });
+        controlsDiv.querySelector('.admin-item-move-right').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const next = element.nextElementSibling;
+            if (next) { element.parentNode.insertBefore(next, element); saveSkillOrder(); }
+        });
+
+        element.appendChild(controlsDiv);
+    }
+
+    async function saveSkillOrder() {
+        const items = document.querySelectorAll('#skillsGrid .skill-card');
+        let order = 0;
+        for (const item of items) {
+            await sb.from('skill_items').update({ sort_order: order }).eq('id', item.dataset.id);
+            order++;
+        }
+    }
+
+    function openSkillEditor(id = null, element = null) {
+        document.getElementById('adminModalTitle').textContent = id ? 'Sửa Kỹ Năng' : 'Thêm Kỹ Năng';
+        document.getElementById('adminModalBody').innerHTML = `
+            <div class="admin-form-group">
+                <label>Tên Kỹ Năng (VD: Videography)</label>
+                <input type="text" id="skillTitle" class="admin-input">
+            </div>
+            <div class="admin-form-group">
+                <label>Class của Icon (FontAwesome) VD: fas fa-camera</label>
+                <input type="text" id="skillIcon" class="admin-input" placeholder="fas fa-star">
+            </div>
+            <div class="admin-form-group">
+                <label>Mô tả chi tiết (Tiếng Việt)</label>
+                <textarea id="skillDescVi" rows="3"></textarea>
+            </div>
+            <div class="admin-form-group">
+                <label>Mô tả chi tiết (English)</label>
+                <textarea id="skillDescEn" rows="3"></textarea>
+            </div>
+        `;
+
+        if (element) {
+            document.getElementById('skillTitle').value = element.querySelector('h3').textContent;
+            document.getElementById('skillIcon').value = element.querySelector('i').className.replace(' skill-icon', '');
+            document.getElementById('skillDescVi').value = element.querySelector('p').getAttribute('data-vi');
+            document.getElementById('skillDescEn').value = element.querySelector('p').getAttribute('data-en');
+        }
+
+        document.getElementById('adminModalSave').onclick = async () => {
+            const data = {
+                title_en: document.getElementById('skillTitle').value.trim(),
+                icon_class: document.getElementById('skillIcon').value.trim() || 'fas fa-star',
+                desc_vi: document.getElementById('skillDescVi').value.trim(),
+                desc_en: document.getElementById('skillDescEn').value.trim()
+            };
+            if (!data.title_en) return showToast('Vui lòng nhập tên kỹ năng!', 'error');
+
+            const btn = document.getElementById('adminModalSave');
+            btn.disabled = true; btn.innerHTML = 'Đang lưu...';
+            try {
+                if (id) {
+                    await sb.from('skill_items').update(data).eq('id', id);
+                } else {
+                    const { data: max } = await sb.from('skill_items').select('sort_order').order('sort_order', {ascending: false}).limit(1);
+                    data.sort_order = max && max.length ? max[0].sort_order + 1 : 0;
+                    await sb.from('skill_items').insert(data);
+                }
+                showToast('Đã lưu thành công!');
+                closeModal();
+                setTimeout(() => window.location.reload(), 1000);
+            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+        };
+        modalOverlay.style.display = 'flex';
+    }
+
+    // =========================================
+    // ALBUM CONTROLS
+    // =========================================
+    function addItemControls(element) {
+        element.style.position = 'relative';
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'admin-item-controls';
+        controlsDiv.innerHTML = `
+            <button class="admin-item-btn admin-item-move-left" title="Di chuyển sang trái"><i class="fas fa-arrow-left"></i></button>
+            <button class="admin-item-btn admin-item-move-right" title="Di chuyển sang phải"><i class="fas fa-arrow-right"></i></button>
+            <button class="admin-item-btn admin-item-delete" title="Xóa"><i class="fas fa-trash-alt"></i></button>
+        `;
+
+        controlsDiv.querySelector('.admin-item-delete').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (!confirm('Bạn có chắc chắn muốn xóa ảnh/video này?')) return;
+            try {
+                const fp = element.dataset.filePath;
+                if (fp && fp !== 'undefined') await sb.storage.from('media').remove([fp]);
+                await sb.from('album_items').delete().eq('id', parseInt(element.dataset.id));
+                element.remove(); showToast('Đã xóa thành công!');
+            } catch(err) { showToast('Lỗi: ' + err.message, 'error'); }
+        });
+        
+        controlsDiv.querySelector('.admin-item-move-left').addEventListener('click', (e) => {
+            e.stopPropagation(); const prev = element.previousElementSibling;
+            if (prev) { element.parentNode.insertBefore(element, prev); saveAlbumOrder(); }
+        });
+        
+        controlsDiv.querySelector('.admin-item-move-right').addEventListener('click', (e) => {
+            e.stopPropagation(); const next = element.nextElementSibling;
+            if (next) { element.parentNode.insertBefore(next, element); saveAlbumOrder(); }
+        });
+
+        element.appendChild(controlsDiv);
+    }
+
+    async function saveAlbumOrder() {
+        const items = document.querySelectorAll('#albumGrid .masonry-item');
+        let order = 0;
+        for (const item of items) {
+            if (item.dataset.id) {
+                await sb.from('album_items').update({ sort_order: order }).eq('id', parseInt(item.dataset.id));
+                order++;
+            }
+        }
+        showToast('Đã lưu vị trí!', 'info');
+    }
+
+    // --- Upload Media ---
     const progressBar = document.createElement('div');
     progressBar.className = 'admin-upload-progress';
     progressBar.style.display = 'none';
@@ -122,124 +542,6 @@
     `;
     document.body.appendChild(progressBar);
 
-    // =========================================
-    // FUNCTIONS
-    // =========================================
-
-    // --- Intro Editor ---
-    function openIntroEditor() {
-        document.getElementById('adminModalTitle').textContent = 'Chỉnh sửa Giới thiệu';
-        document.getElementById('adminModalBody').innerHTML = `
-            <div class="admin-form-group">
-                <label><i class="fas fa-flag"></i> Tiếng Việt</label>
-                <textarea id="editIntroVi" rows="6">${translations.vi.hero_intro}</textarea>
-            </div>
-            <div class="admin-form-group">
-                <label><i class="fas fa-globe"></i> English</label>
-                <textarea id="editIntroEn" rows="6">${translations.en.hero_intro}</textarea>
-            </div>
-        `;
-        document.getElementById('adminModalSave').onclick = saveIntro;
-        modalOverlay.style.display = 'flex';
-    }
-
-    async function saveIntro() {
-        const btn = document.getElementById('adminModalSave');
-        const orig = btn.innerHTML;
-        btn.innerHTML = '<span class="admin-spinner"></span> Đang lưu...';
-        btn.disabled = true;
-
-        try {
-            const vi = document.getElementById('editIntroVi').value.trim();
-            const en = document.getElementById('editIntroEn').value.trim();
-            if (!vi || !en) { showToast('Vui lòng điền cả 2 ngôn ngữ!', 'error'); return; }
-
-            await sb.from('settings').upsert({ key: 'intro_vi', value: vi, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-            await sb.from('settings').upsert({ key: 'intro_en', value: en, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-
-            translations.vi.hero_intro = vi;
-            translations.en.hero_intro = en;
-            const lang = localStorage.getItem('portfolioLang') || 'en';
-            applyLanguage(lang);
-
-            showToast('Đã lưu nội dung thành công!');
-            closeModal();
-        } catch (err) {
-            showToast('Lỗi: ' + err.message, 'error');
-        } finally {
-            btn.innerHTML = orig;
-            btn.disabled = false;
-        }
-    }
-
-    // --- Album: Add controls (delete + move) to each Supabase item ---
-    function addItemControls(element) {
-        element.style.position = 'relative';
-
-        const controlsDiv = document.createElement('div');
-        controlsDiv.className = 'admin-item-controls';
-        controlsDiv.innerHTML = `
-            <button class="admin-item-btn admin-item-move-left" title="Di chuyển sang trái">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <button class="admin-item-btn admin-item-move-right" title="Di chuyển sang phải">
-                <i class="fas fa-arrow-right"></i>
-            </button>
-            <button class="admin-item-btn admin-item-delete" title="Xóa">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        `;
-
-        // Delete
-        controlsDiv.querySelector('.admin-item-delete').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const id = element.dataset.id;
-            const fp = element.dataset.filePath;
-            deleteMedia(id, fp, element);
-        });
-
-        // Move Left
-        controlsDiv.querySelector('.admin-item-move-left').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const prev = element.previousElementSibling;
-            if (prev) {
-                element.parentNode.insertBefore(element, prev);
-                saveAlbumOrder();
-                showToast('Đã di chuyển!', 'info');
-            }
-        });
-
-        // Move Right
-        controlsDiv.querySelector('.admin-item-move-right').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const next = element.nextElementSibling;
-            if (next) {
-                element.parentNode.insertBefore(next, element);
-                saveAlbumOrder();
-                showToast('Đã di chuyển!', 'info');
-            }
-        });
-
-        element.appendChild(controlsDiv);
-    }
-
-    // --- Save album order to Supabase ---
-    async function saveAlbumOrder() {
-        const grid = document.querySelector('.masonry-grid');
-        if (!grid) return;
-
-        const items = grid.querySelectorAll('.masonry-item[data-source="supabase"]');
-        let order = 0;
-        for (const item of items) {
-            const id = item.dataset.id;
-            if (id) {
-                await sb.from('album_items').update({ sort_order: order }).eq('id', parseInt(id));
-                order++;
-            }
-        }
-    }
-
-    // --- Upload Media ---
     async function uploadMedia(files) {
         const total = files.length;
         let uploaded = 0;
@@ -263,89 +565,28 @@
                 const type = file.type.startsWith('video/') ? 'video' : 'image';
 
                 const { data: insertData, error: insertErr } = await sb.from('album_items').insert({
-                    type, url: urlData.publicUrl, file_path: fileName, sort_order: nextOrder
+                    type, url: urlData.publicUrl, file_path: fileName, sort_order: nextOrder, category: 'all'
                 }).select();
 
                 if (insertErr) { showToast('Lỗi DB: ' + insertErr.message, 'error'); continue; }
 
-                const itemData = insertData ? insertData[0] : { type, url: urlData.publicUrl, file_path: fileName };
-                addItemToGrid(itemData);
-
-                nextOrder++;
-                uploaded++;
+                nextOrder++; uploaded++;
                 const pct = Math.round((uploaded / total) * 100);
                 document.getElementById('adminProgressFill').style.width = pct + '%';
                 document.getElementById('adminProgressText').textContent = `Đang upload ${uploaded}/${total}...`;
-            } catch (err) {
-                showToast('Lỗi: ' + err.message, 'error');
-            }
+            } catch (err) { showToast('Lỗi: ' + err.message, 'error'); }
         }
 
         document.getElementById('adminProgressText').textContent = `Hoàn tất! ${uploaded}/${total} file.`;
-        setTimeout(() => { progressBar.style.display = 'none'; }, 2500);
-        document.getElementById('adminFileInput').value = '';
-        if (uploaded > 0) showToast(`Upload thành công ${uploaded} file!`);
+        setTimeout(() => { 
+            progressBar.style.display = 'none'; 
+            window.location.reload(); 
+        }, 1500);
     }
 
-    function addItemToGrid(item) {
-        const grid = document.querySelector('.masonry-grid');
-        if (!grid) return;
-
-        const div = document.createElement('div');
-        div.className = 'masonry-item';
-        div.dataset.source = 'supabase';
-        div.dataset.id = item.id || '';
-        div.dataset.filePath = item.file_path || '';
-
-        if (item.type === 'video') {
-            div.dataset.type = 'video';
-            div.innerHTML = `<video src="${item.url}" autoplay loop muted playsinline></video>`;
-        } else {
-            div.innerHTML = `<img loading="lazy" src="${item.url}" alt="Album Image">`;
-        }
-
-        addItemControls(div);
-
-        // Modal click
-        div.addEventListener('click', () => {
-            const modal = document.getElementById('mediaModal');
-            const modalImg = document.getElementById('modalImg');
-            const modalVideo = document.getElementById('modalVideo');
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            if (item.type === 'video') {
-                modalImg.style.display = 'none';
-                modalVideo.style.display = 'block';
-                modalVideo.src = item.url;
-                modalVideo.play();
-            } else {
-                modalVideo.style.display = 'none';
-                modalVideo.pause();
-                modalImg.style.display = 'block';
-                modalImg.src = item.url;
-            }
-        });
-
-        grid.appendChild(div);
-    }
-
-    // --- Delete Media ---
-    async function deleteMedia(id, filePath, element) {
-        if (!confirm('Bạn có chắc chắn muốn xóa ảnh/video này?')) return;
-        try {
-            if (filePath) await sb.storage.from('media').remove([filePath]);
-            if (id) await sb.from('album_items').delete().eq('id', parseInt(id));
-            element.style.transition = '0.3s';
-            element.style.opacity = '0';
-            element.style.transform = 'scale(0.8)';
-            setTimeout(() => element.remove(), 300);
-            showToast('Đã xóa thành công!');
-        } catch (err) {
-            showToast('Lỗi: ' + err.message, 'error');
-        }
-    }
-
-    // --- Helpers ---
+    // =========================================
+    // HELPERS
+    // =========================================
     function closeModal() { modalOverlay.style.display = 'none'; }
 
     function showToast(msg, type = 'success') {
