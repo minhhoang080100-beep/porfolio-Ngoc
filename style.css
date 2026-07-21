@@ -947,6 +947,18 @@ body.admin-mode .navbar { top: 48px; }
 .timeline-item:hover .admin-item-controls,
 .skill-card:hover .admin-item-controls { opacity: 1; }
 
+@media (max-width: 768px) {
+    .admin-item-controls {
+        opacity: 1;
+        /* Increase touch target size slightly for mobile */
+        gap: 10px;
+    }
+    .admin-item-btn {
+        width: 38px !important;
+        height: 38px !important;
+    }
+}
+
 .admin-item-btn {
     background: rgba(255,255,255,0.85);
     color: #2b2a2a;
