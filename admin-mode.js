@@ -152,6 +152,16 @@
             };
             attach();
             new MutationObserver(attach).observe(grid, { childList: true });
+            
+            if (!grid.dataset.sortable) {
+                Sortable.create(grid, {
+                    animation: 150,
+                    delay: 200,
+                    delayOnTouchOnly: true,
+                    onEnd: saveExpOrder
+                });
+                grid.dataset.sortable = 'true';
+            }
         }
     }
 
@@ -180,6 +190,16 @@
             };
             attach();
             new MutationObserver(attach).observe(grid, { childList: true });
+
+            if (!grid.dataset.sortable) {
+                Sortable.create(grid, {
+                    animation: 150,
+                    delay: 200,
+                    delayOnTouchOnly: true,
+                    onEnd: saveSkillOrder
+                });
+                grid.dataset.sortable = 'true';
+            }
         }
     }
 
@@ -211,6 +231,16 @@
             };
             attach();
             new MutationObserver(attach).observe(grid, { childList: true });
+
+            if (!grid.dataset.sortable) {
+                Sortable.create(grid, {
+                    animation: 150,
+                    delay: 200,
+                    delayOnTouchOnly: true,
+                    onEnd: saveAlbumOrder
+                });
+                grid.dataset.sortable = 'true';
+            }
         }
     }
 
@@ -345,8 +375,6 @@
         controlsDiv.className = 'admin-item-controls';
         controlsDiv.style.top = '10px'; controlsDiv.style.right = '10px';
         controlsDiv.innerHTML = `
-            <button class="admin-item-btn admin-item-move-left" title="Đưa lên trên"><i class="fas fa-arrow-up"></i></button>
-            <button class="admin-item-btn admin-item-move-right" title="Đưa xuống dưới"><i class="fas fa-arrow-down"></i></button>
             <button class="admin-item-btn admin-item-edit" title="Sửa"><i class="fas fa-pen"></i></button>
             <button class="admin-item-btn admin-item-delete" title="Xóa"><i class="fas fa-trash-alt"></i></button>
         `;
@@ -360,16 +388,6 @@
                 await sb.from('experience_items').delete().eq('id', element.dataset.id);
                 element.remove(); showToast('Đã xóa!');
             }
-        });
-        controlsDiv.querySelector('.admin-item-move-left').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const prev = element.previousElementSibling;
-            if (prev) { element.parentNode.insertBefore(element, prev); saveExpOrder(); }
-        });
-        controlsDiv.querySelector('.admin-item-move-right').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const next = element.nextElementSibling;
-            if (next) { element.parentNode.insertBefore(next, element); saveExpOrder(); }
         });
 
         element.appendChild(controlsDiv);
@@ -448,8 +466,6 @@
         controlsDiv.className = 'admin-item-controls';
         controlsDiv.style.top = '10px'; controlsDiv.style.right = '10px';
         controlsDiv.innerHTML = `
-            <button class="admin-item-btn admin-item-move-left" title="Chuyển lên"><i class="fas fa-arrow-left"></i></button>
-            <button class="admin-item-btn admin-item-move-right" title="Chuyển xuống"><i class="fas fa-arrow-right"></i></button>
             <button class="admin-item-btn admin-item-edit" title="Sửa"><i class="fas fa-pen"></i></button>
             <button class="admin-item-btn admin-item-delete" title="Xóa"><i class="fas fa-trash-alt"></i></button>
         `;
@@ -463,16 +479,6 @@
                 await sb.from('skill_items').delete().eq('id', element.dataset.id);
                 element.remove(); showToast('Đã xóa!');
             }
-        });
-        controlsDiv.querySelector('.admin-item-move-left').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const prev = element.previousElementSibling;
-            if (prev) { element.parentNode.insertBefore(element, prev); saveSkillOrder(); }
-        });
-        controlsDiv.querySelector('.admin-item-move-right').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const next = element.nextElementSibling;
-            if (next) { element.parentNode.insertBefore(next, element); saveSkillOrder(); }
         });
 
         element.appendChild(controlsDiv);
@@ -550,8 +556,6 @@
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'admin-item-controls';
         controlsDiv.innerHTML = `
-            <button class="admin-item-btn admin-item-move-left" title="Di chuyển sang trái"><i class="fas fa-arrow-left"></i></button>
-            <button class="admin-item-btn admin-item-move-right" title="Di chuyển sang phải"><i class="fas fa-arrow-right"></i></button>
             <button class="admin-item-btn admin-item-delete" title="Xóa"><i class="fas fa-trash-alt"></i></button>
         `;
 
@@ -564,16 +568,6 @@
                 await sb.from('album_items').delete().eq('id', parseInt(element.dataset.id));
                 element.remove(); showToast('Đã xóa thành công!');
             } catch(err) { showToast('Lỗi: ' + err.message, 'error'); }
-        });
-        
-        controlsDiv.querySelector('.admin-item-move-left').addEventListener('click', (e) => {
-            e.stopPropagation(); const prev = element.previousElementSibling;
-            if (prev) { element.parentNode.insertBefore(element, prev); saveAlbumOrder(); }
-        });
-        
-        controlsDiv.querySelector('.admin-item-move-right').addEventListener('click', (e) => {
-            e.stopPropagation(); const next = element.nextElementSibling;
-            if (next) { element.parentNode.insertBefore(next, element); saveAlbumOrder(); }
         });
 
         element.appendChild(controlsDiv);

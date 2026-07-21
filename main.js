@@ -444,11 +444,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('adminMode') === 'true') {
         const supaScript = document.createElement('script');
         supaScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-        supaScript.onload = () => {
-            const adminScript = document.createElement('script');
-            adminScript.src = 'admin-mode.js';
-            document.head.appendChild(adminScript);
+        
+        const sortableScript = document.createElement('script');
+        sortableScript.src = 'https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js';
+        
+        let loaded = 0;
+        const initAdmin = () => {
+            loaded++;
+            if (loaded === 2) {
+                const adminScript = document.createElement('script');
+                adminScript.src = 'admin-mode.js';
+                document.head.appendChild(adminScript);
+            }
         };
+
+        supaScript.onload = initAdmin;
+        sortableScript.onload = initAdmin;
+
         document.head.appendChild(supaScript);
+        document.head.appendChild(sortableScript);
     }
 });
