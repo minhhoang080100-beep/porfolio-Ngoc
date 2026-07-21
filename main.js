@@ -316,20 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Audio Toggle
-    const audioBtn = document.getElementById('audioToggle');
-    const bgMusic = document.getElementById('bgMusic');
-    if (audioBtn && bgMusic) {
-        audioBtn.addEventListener('click', () => {
-            if (bgMusic.paused) {
-                bgMusic.play();
-                audioBtn.classList.add('playing');
-            } else {
-                bgMusic.pause();
-                audioBtn.classList.remove('playing');
-            }
-        });
-    }
+
 
     // Navbar Scroll
     const navbar = document.querySelector('.navbar');

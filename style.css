@@ -1228,33 +1228,7 @@ body.admin-mode .navbar { top: 48px; }
     100% { left: 200%; }
 }
 
-/* Audio Toggle */
-.audio-toggle {
-    position: fixed;
-    bottom: 30px;
-    left: 30px;
-    width: 50px;
-    height: 50px;
-    background-color: #2b2a2a;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 1000;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: transform 0.3s;
-}
 
-.audio-toggle:hover {
-    transform: scale(1.1);
-}
-
-.audio-toggle.playing i {
-    animation: spin 3s linear infinite;
-}
 
 
 
