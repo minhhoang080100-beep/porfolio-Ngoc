@@ -943,7 +943,9 @@ body.admin-mode .navbar { top: 48px; }
     z-index: 10;
 }
 
-.masonry-item:hover .admin-item-controls { opacity: 1; }
+.masonry-item:hover .admin-item-controls,
+.timeline-item:hover .admin-item-controls,
+.skill-card:hover .admin-item-controls { opacity: 1; }
 
 .admin-item-btn {
     background: rgba(255,255,255,0.85);
