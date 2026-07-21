@@ -480,17 +480,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = "HÀ NGỌC";
         typewriterElement.innerHTML = '';
         const words = text.split(' ');
+        let globalCharIndex = 0;
         
         words.forEach((word, wordIndex) => {
             const wordSpan = document.createElement('span');
             wordSpan.className = 'word';
             wordSpan.style.display = 'inline-block';
             
-            word.split('').forEach((char, charIndex) => {
+            word.split('').forEach((char) => {
                 const charSpan = document.createElement('span');
                 charSpan.className = 'staggered-letter';
-                // Calculate delay based on absolute letter index (simplified by just using order)
-                charSpan.style.animationDelay = `${(wordIndex * 5 + charIndex) * 0.1}s`;
+                charSpan.style.animationDelay = `${globalCharIndex * 0.08}s`;
+                globalCharIndex++;
                 if (char === ' ') {
                     charSpan.innerHTML = '&nbsp;';
                 } else {
@@ -506,6 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const space = document.createElement('span');
                 space.innerHTML = '&nbsp;';
                 typewriterElement.appendChild(space);
+                globalCharIndex++; // Treat space as a character delay
             }
         });
     }
