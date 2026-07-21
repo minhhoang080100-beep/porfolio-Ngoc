@@ -830,6 +830,7 @@ h1, h2, h3, h4 {
    =================================== */
 
 body.admin-mode { padding-top: 48px; }
+body.admin-mode .navbar { top: 48px; }
 
 /* Admin Top Bar */
 .admin-bar {
