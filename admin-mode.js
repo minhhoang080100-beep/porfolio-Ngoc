@@ -143,12 +143,16 @@
             document.getElementById('btnAddExp').addEventListener('click', () => openExpEditor());
         }
 
-        const items = expSection.querySelectorAll('.timeline-item');
-        items.forEach(item => {
-            if (!item.querySelector('.admin-item-controls')) {
-                addExpControls(item);
-            }
-        });
+        const grid = document.getElementById('experienceGrid');
+        if (grid) {
+            const attach = () => {
+                grid.querySelectorAll('.timeline-item').forEach(item => {
+                    if (!item.querySelector('.admin-item-controls')) addExpControls(item);
+                });
+            };
+            attach();
+            new MutationObserver(attach).observe(grid, { childList: true });
+        }
     }
 
     function setupSkillsAdmin() {
@@ -167,12 +171,16 @@
             document.getElementById('btnAddSkill').addEventListener('click', () => openSkillEditor());
         }
 
-        const items = skillsSection.querySelectorAll('.skill-card');
-        items.forEach(item => {
-            if (!item.querySelector('.admin-item-controls')) {
-                addSkillControls(item);
-            }
-        });
+        const grid = document.getElementById('skillsGrid');
+        if (grid) {
+            const attach = () => {
+                grid.querySelectorAll('.skill-card').forEach(item => {
+                    if (!item.querySelector('.admin-item-controls')) addSkillControls(item);
+                });
+            };
+            attach();
+            new MutationObserver(attach).observe(grid, { childList: true });
+        }
     }
 
     function setupAlbumAdmin() {
@@ -194,12 +202,16 @@
             });
         }
 
-        const items = document.querySelectorAll('.masonry-item');
-        items.forEach(item => {
-            if (!item.querySelector('.admin-item-controls')) {
-                addItemControls(item);
-            }
-        });
+        const grid = document.querySelector('.masonry-grid');
+        if (grid) {
+            const attach = () => {
+                grid.querySelectorAll('.masonry-item').forEach(item => {
+                    if (!item.querySelector('.admin-item-controls')) addItemControls(item);
+                });
+            };
+            attach();
+            new MutationObserver(attach).observe(grid, { childList: true });
+        }
     }
 
     // =========================================
