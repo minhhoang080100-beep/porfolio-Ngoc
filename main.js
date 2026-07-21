@@ -239,13 +239,22 @@ async function fetchAlbumItems() {
 
         items.forEach(item => {
             const div = document.createElement('div');
-            div.className = 'masonry-item';
+            div.className = 'masonry-item skeleton';
             div.dataset.category = item.category || 'all';
             if (item.type === 'video') {
                 div.dataset.type = 'video';
-                div.innerHTML = '<video src="' + item.url + '" autoplay loop muted playsinline></video>';
+                const vid = document.createElement('video');
+                vid.src = item.url;
+                vid.autoplay = true; vid.loop = true; vid.muted = true; vid.playsInline = true;
+                vid.onloadeddata = () => div.classList.remove('skeleton');
+                div.appendChild(vid);
             } else {
-                div.innerHTML = '<img loading="lazy" src="' + item.url + '" alt="Album Image">';
+                const img = document.createElement('img');
+                img.loading = 'lazy';
+                img.src = item.url;
+                img.alt = 'Album Image';
+                img.onload = () => div.classList.remove('skeleton');
+                div.appendChild(img);
             }
             grid.appendChild(div);
 
@@ -278,14 +287,56 @@ async function fetchAlbumItems() {
 // Load dynamic data on page load
 fetchDynamicData();
 
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // Fetch album items after DOM ready
     fetchAlbumItems();
 
-    // 1. Navbar Scroll Effect
+    // --- Visual Upgrades (Cursor, Audio, Parallax) ---
+    // Custom Cursor
+    const cursor = document.getElementById('customCursor');
+    if (cursor) {
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+        
+        const attachHover = () => {
+            const hoverTargets = document.querySelectorAll('a, button, .masonry-item, .skill-card');
+            hoverTargets.forEach(el => {
+                el.addEventListener('mouseenter', () => cursor.classList.add('cursor-hover'));
+                el.addEventListener('mouseleave', () => cursor.classList.remove('cursor-hover'));
+            });
+        };
+        attachHover(); // Initial attach
+        
+        // Use MutationObserver to attach to dynamically created items
+        const observer = new MutationObserver(() => attachHover());
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Audio Toggle
+    const audioBtn = document.getElementById('audioToggle');
+    const bgMusic = document.getElementById('bgMusic');
+    if (audioBtn && bgMusic) {
+        audioBtn.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                audioBtn.classList.add('playing');
+            } else {
+                bgMusic.pause();
+                audioBtn.classList.remove('playing');
+            }
+        });
+    }
+
+    // Navbar Scroll
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
+        const scrollY = window.scrollY;
+        // Navbar
+        if (scrollY > 50) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
