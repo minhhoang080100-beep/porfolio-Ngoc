@@ -295,25 +295,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Visual Upgrades (Cursor, Audio, Parallax) ---
     // Custom Cursor
-    const cursor = document.getElementById('customCursor');
-    if (cursor) {
+    const customCursor = document.getElementById('custom-cursor');
+    if (customCursor) {
         document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
+            customCursor.style.left = e.clientX + 'px';
+            customCursor.style.top = e.clientY + 'px';
+        });
+
+        const hoverSelector = 'a, button, .masonry-item, .skill-card, .theme-switch, .lang-switch, .hamburger, .close-menu';
+        
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.closest(hoverSelector)) {
+                customCursor.classList.add('hover');
+            }
         });
         
-        const attachHover = () => {
-            const hoverTargets = document.querySelectorAll('a, button, .masonry-item, .skill-card');
-            hoverTargets.forEach(el => {
-                el.addEventListener('mouseenter', () => cursor.classList.add('cursor-hover'));
-                el.addEventListener('mouseleave', () => cursor.classList.remove('cursor-hover'));
-            });
-        };
-        attachHover(); // Initial attach
-        
-        // Use MutationObserver to attach to dynamically created items
-        const observer = new MutationObserver(() => attachHover());
-        observer.observe(document.body, { childList: true, subtree: true });
+        document.addEventListener('mouseout', (e) => {
+            if (e.target.closest(hoverSelector)) {
+                customCursor.classList.remove('hover');
+            }
+        });
     }
 
 
@@ -446,20 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 6. Custom Cursor
-    const customCursor = document.getElementById('custom-cursor');
-    if (customCursor) {
-        document.addEventListener('mousemove', (e) => {
-            customCursor.style.left = e.clientX + 'px';
-            customCursor.style.top = e.clientY + 'px';
-        });
-
-        const clickables = document.querySelectorAll('a, .masonry-item, .theme-switch, .lang-switch, .hamburger, .close-menu');
-        clickables.forEach(el => {
-            el.addEventListener('mouseenter', () => customCursor.classList.add('hover'));
-            el.addEventListener('mouseleave', () => customCursor.classList.remove('hover'));
-        });
-    }
+    // 6. Custom Cursor logic has been merged above
 
     // 7. Staggered Text Reveal
     const typewriterElement = document.getElementById('typewriter');
