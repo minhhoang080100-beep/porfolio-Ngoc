@@ -1282,3 +1282,26 @@ body.admin-mode .navbar { top: 48px; }
     color: var(--text-light);
     max-width: 400px;
 }
+
+
+/* btn-view-project */
+.btn-view-project {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: rgba(167, 208, 246, 0.1);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-view-project:hover {
+    background: var(--primary-color);
+    color: var(--bg-color);
+    transform: translateY(-2px);
+}

@@ -583,3 +583,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ==========================================
+// Project Modal Logic
+// ==========================================
+window.openProjectModal = function(companyName, mediaList) {
+    const modal = document.getElementById('projectModal');
+    const title = document.getElementById('projectModalTitle');
+    const grid = document.getElementById('projectModalGrid');
+    
+    if (!modal || !grid) return;
+    
+    title.textContent = "Dự án: " + companyName;
+    grid.innerHTML = ''; // Clear old
+
+    mediaList.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'masonry-item';
+        
+        if (item.type === 'video') {
+            const vid = document.createElement('video');
+            vid.src = item.url;
+            vid.controls = true;
+            vid.preload = 'metadata';
+            div.appendChild(vid);
+        } else {
+            const img = document.createElement('img');
+            img.src = item.url;
+            img.loading = 'lazy';
+            img.onclick = () => openMediaModal(item.url, 'image'); // Reuse single view
+            img.style.cursor = 'pointer';
+            div.appendChild(img);
+        }
+        grid.appendChild(div);
+    });
+
+    modal.style.display = 'flex';
+};
+
+const pmClose = document.getElementById('projectModalClose');
+if (pmClose) {
+    pmClose.onclick = () => {
+        document.getElementById('projectModal').style.display = 'none';
+        // Pause all videos when closing modal
+        document.querySelectorAll('#projectModalGrid video').forEach(v => v.pause());
+    };
+}

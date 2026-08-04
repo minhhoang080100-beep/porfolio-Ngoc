@@ -203,14 +203,28 @@
         }
     }
 
-    function setupAlbumAdmin() {
+    async function setupAlbumAdmin() {
         const albumSection = document.getElementById('album');
         if (!albumSection) return;
         const albumTitle = albumSection.querySelector('.section-title');
         if (albumTitle && !albumSection.querySelector('.admin-add-btn')) {
+            const { data: exps } = await sb.from('experience_items').select('id, company');
+            let options = '<option value="">-- Thuộc về mốc Kinh nghiệm (Không bắt buộc) --</option>';
+            if (exps) {
+                exps.forEach(e => {
+                    options += `<option value="${e.id}">${e.company}</option>`;
+                });
+            }
+
             const controls = document.createElement('div');
             controls.className = 'admin-album-controls';
+            controls.style.display = 'flex';
+            controls.style.alignItems = 'center';
+            controls.style.gap = '10px';
             controls.innerHTML = `
+                <select id="adminExpSelect" class="admin-input" style="width: 250px; padding: 5px;">
+                    ${options}
+                </select>
                 <label class="admin-add-btn">
                     <input type="file" id="adminFileInput" multiple accept="image/*,video/*" hidden>
                     <i class="fas fa-plus-circle"></i> Thêm ảnh/video
@@ -720,8 +734,14 @@
                 const { data: urlData } = sb.storage.from('media').getPublicUrl(fileName);
                 const type = file.type.startsWith('video/') ? 'video' : 'image';
 
+                const expSelect = document.getElementById('adminExpSelect');
+                let expId = null;
+                if (expSelect && expSelect.value) {
+                    expId = parseInt(expSelect.value);
+                }
+
                 const { data: insertData, error: insertErr } = await sb.from('album_items').insert({
-                    type, url: urlData.publicUrl, file_path: fileName, sort_order: nextOrder, category: 'all'
+                    type, url: urlData.publicUrl, file_path: fileName, sort_order: nextOrder, category: 'all', experience_id: expId
                 }).select();
 
                 if (insertErr) { showToast('Lỗi DB: ' + insertErr.message, 'error'); continue; }
