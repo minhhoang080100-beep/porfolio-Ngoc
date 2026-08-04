@@ -302,9 +302,12 @@
                 const vi = document.getElementById('editIntroVi').value.trim();
                 const en = document.getElementById('editIntroEn').value.trim();
                 
-                await sb.from('settings').upsert({ key: 'hero_subtitle', value: sub }, { onConflict: 'key' });
-                await sb.from('settings').upsert({ key: 'intro_vi', value: vi }, { onConflict: 'key' });
-                await sb.from('settings').upsert({ key: 'intro_en', value: en }, { onConflict: 'key' });
+                const resSettings1 = await Promise.all([
+                    sb.from('settings').upsert({ key: 'hero_subtitle', value: sub }, { onConflict: 'key' }),
+                    sb.from('settings').upsert({ key: 'intro_vi', value: vi }, { onConflict: 'key' }),
+                    sb.from('settings').upsert({ key: 'intro_en', value: en }, { onConflict: 'key' })
+                ]);
+                for (let r of resSettings1) if (r.error) throw r.error;
                 
                 showToast('Đã lưu! Tải lại trang để xem thay đổi.');
                 closeModal();
@@ -359,7 +362,7 @@
             // Get current CV URL from Supabase Settings instead of DOM to be safe
             sb.from('settings').select('value').eq('key', 'cv_url').single().then(({data}) => {
                 if (data && data.value) editCv.value = data.value;
-            });
+            }).catch(err => console.warn('Không tải được CV hiện tại:', err.message));
 
             btnUploadCv.addEventListener('click', () => cvFileInput.click());
             
@@ -389,10 +392,13 @@
             const btn = document.getElementById('adminModalSave');
             btn.disabled = true; btn.innerHTML = 'Đang lưu...';
             try {
-                await sb.from('settings').upsert({ key: 'contact_phone', value: document.getElementById('editPhone').value.trim() }, { onConflict: 'key' });
-                await sb.from('settings').upsert({ key: 'contact_email', value: document.getElementById('editEmail').value.trim() }, { onConflict: 'key' });
-                await sb.from('settings').upsert({ key: 'contact_fb', value: document.getElementById('editFb').value.trim() }, { onConflict: 'key' });
-                await sb.from('settings').upsert({ key: 'cv_url', value: document.getElementById('editCv').value.trim() }, { onConflict: 'key' });
+                const resSettings2 = await Promise.all([
+                    sb.from('settings').upsert({ key: 'contact_phone', value: document.getElementById('editPhone').value.trim() }, { onConflict: 'key' }),
+                    sb.from('settings').upsert({ key: 'contact_email', value: document.getElementById('editEmail').value.trim() }, { onConflict: 'key' }),
+                    sb.from('settings').upsert({ key: 'contact_fb', value: document.getElementById('editFb').value.trim() }, { onConflict: 'key' }),
+                    sb.from('settings').upsert({ key: 'cv_url', value: document.getElementById('editCv').value.trim() }, { onConflict: 'key' })
+                ]);
+                for (let r of resSettings2) if (r.error) throw r.error;
                 
                 showToast('Đã lưu! Tải lại trang để xem thay đổi.');
                 closeModal();
@@ -422,7 +428,8 @@
         controlsDiv.querySelector('.admin-item-delete').addEventListener('click', async (e) => {
             e.stopPropagation();
             if (confirm('Xóa mốc kinh nghiệm này?')) {
-                await sb.from('experience_items').delete().eq('id', element.dataset.id);
+                const { error } = await sb.from('experience_items').delete().eq('id', parseInt(element.dataset.id));
+                if (error) return showToast('Lỗi xóa: ' + error.message, 'error');
                 element.remove(); showToast('Đã xóa!');
             }
         });
@@ -479,13 +486,15 @@
             const btn = document.getElementById('adminModalSave');
             btn.disabled = true; btn.innerHTML = 'Đang lưu...';
             try {
+                let res;
                 if (id) {
-                    await sb.from('experience_items').update(data).eq('id', id);
+                    res = await sb.from('experience_items').update(data).eq('id', parseInt(id));
                 } else {
                     const { data: max } = await sb.from('experience_items').select('sort_order').order('sort_order', {ascending: false}).limit(1);
                     data.sort_order = max && max.length ? max[0].sort_order + 1 : 0;
-                    await sb.from('experience_items').insert(data);
+                    res = await sb.from('experience_items').insert(data);
                 }
+                if (res.error) throw res.error;
                 showToast('Đã lưu thành công!');
                 closeModal();
                 setTimeout(() => window.location.reload(), 1000);
@@ -513,7 +522,8 @@
         controlsDiv.querySelector('.admin-item-delete').addEventListener('click', async (e) => {
             e.stopPropagation();
             if (confirm('Xóa kỹ năng này?')) {
-                await sb.from('skill_items').delete().eq('id', element.dataset.id);
+                const { error } = await sb.from('skill_items').delete().eq('id', parseInt(element.dataset.id));
+                if (error) return showToast('Lỗi xóa: ' + error.message, 'error');
                 element.remove(); showToast('Đã xóa!');
             }
         });
@@ -570,13 +580,15 @@
             const btn = document.getElementById('adminModalSave');
             btn.disabled = true; btn.innerHTML = 'Đang lưu...';
             try {
+                let res;
                 if (id) {
-                    await sb.from('skill_items').update(data).eq('id', id);
+                    res = await sb.from('skill_items').update(data).eq('id', parseInt(id));
                 } else {
                     const { data: max } = await sb.from('skill_items').select('sort_order').order('sort_order', {ascending: false}).limit(1);
                     data.sort_order = max && max.length ? max[0].sort_order + 1 : 0;
-                    await sb.from('skill_items').insert(data);
+                    res = await sb.from('skill_items').insert(data);
                 }
+                if (res.error) throw res.error;
                 showToast('Đã lưu thành công!');
                 closeModal();
                 setTimeout(() => window.location.reload(), 1000);
@@ -601,8 +613,12 @@
             if (!confirm('Bạn có chắc chắn muốn xóa ảnh/video này?')) return;
             try {
                 const fp = element.dataset.filePath;
-                if (fp && fp !== 'undefined') await sb.storage.from('media').remove([fp]);
-                await sb.from('album_items').delete().eq('id', parseInt(element.dataset.id));
+                if (fp && fp !== 'undefined') {
+                    const { error: errStorage } = await sb.storage.from('media').remove([fp]);
+                    if (errStorage) console.log("Storage err:", errStorage);
+                }
+                const { error } = await sb.from('album_items').delete().eq('id', parseInt(element.dataset.id));
+                if (error) throw error;
                 element.remove(); showToast('Đã xóa thành công!');
             } catch(err) { showToast('Lỗi: ' + err.message, 'error'); }
         });
