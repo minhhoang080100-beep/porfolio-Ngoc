@@ -464,10 +464,12 @@
     // EXPERIENCE CONTROLS
     // =========================================
     function addExpControls(element) {
-        element.style.position = 'relative';
+        const contentDiv = element.querySelector('.timeline-content');
+        if (contentDiv) contentDiv.style.position = 'relative';
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'admin-item-controls';
-        controlsDiv.style.top = '10px'; controlsDiv.style.right = '10px';
+        controlsDiv.style.top = '15px'; controlsDiv.style.right = '15px';
+        controlsDiv.style.zIndex = '100';
         controlsDiv.innerHTML = `
             <button class="admin-item-btn admin-item-edit" title="Sửa"><i class="fas fa-pen"></i></button>
             <button class="admin-item-btn admin-item-delete" title="Xóa"><i class="fas fa-trash-alt"></i></button>
@@ -485,7 +487,11 @@
             }
         });
 
-        element.appendChild(controlsDiv);
+        if (contentDiv) {
+            contentDiv.appendChild(controlsDiv);
+        } else {
+            element.appendChild(controlsDiv);
+        }
     }
 
     async function saveExpOrder() {
