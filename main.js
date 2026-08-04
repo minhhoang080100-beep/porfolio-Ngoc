@@ -342,17 +342,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // Navbar Scroll
+    // Navbar Scroll (Optimized with requestAnimationFrame)
     const navbar = document.querySelector('.navbar');
+    let isNavbarScrolling = false;
     window.addEventListener('scroll', () => {
-        const scrollY = window.scrollY;
-        // Navbar
-        if (scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
+        if (!isNavbarScrolling) {
+            window.requestAnimationFrame(() => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                isNavbarScrolling = false;
+            });
+            isNavbarScrolling = true;
         }
-    });
+    }, { passive: true });
 
     // 2. Mobile Menu Toggle
     const hamburger = document.querySelector('.hamburger');
@@ -374,25 +379,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 3. Scroll Reveal Animation
+    // 3. Scroll Reveal Animation (Optimized with IntersectionObserver)
     const reveals = document.querySelectorAll('.reveal');
     
-    function checkReveal() {
-        const windowHeight = window.innerHeight;
-        const revealPoint = 100;
+    if ('IntersectionObserver' in window) {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target); // Stop observing once revealed
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '0px 0px -100px 0px', // Equivalent to revealPoint = 100
+            threshold: 0
+        });
 
         reveals.forEach(reveal => {
-            const revealTop = reveal.getBoundingClientRect().top;
-            if (revealTop < windowHeight - revealPoint) {
-                reveal.classList.add('active');
-            }
+            revealObserver.observe(reveal);
         });
+    } else {
+        // Fallback for very old browsers
+        reveals.forEach(reveal => reveal.classList.add('active'));
     }
-    
-    // Initial check
-    checkReveal();
-    // Check on scroll
-    window.addEventListener('scroll', checkReveal);
 
     // 4. Media Modal (Lightbox) — Fixed for proper image display
     const modal = document.getElementById('mediaModal');
