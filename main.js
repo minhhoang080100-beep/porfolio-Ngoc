@@ -247,9 +247,26 @@ async function fetchDynamicData() {
                             div.dataset.type = 'video';
                             const vid = document.createElement('video');
                             vid.src = item.url;
-                            vid.autoplay = true; vid.loop = true; vid.muted = true; vid.playsInline = true;
+                            vid.loop = true; vid.muted = true; vid.playsInline = true;
+                            vid.preload = 'metadata';
                             vid.onloadeddata = () => div.classList.remove('skeleton');
                             div.appendChild(vid);
+                            
+                            // Intersection Observer for Video Play/Pause
+                            if ('IntersectionObserver' in window) {
+                                if (!window.videoObserver) {
+                                    window.videoObserver = new IntersectionObserver((entries) => {
+                                        entries.forEach(entry => {
+                                            if (entry.isIntersecting) {
+                                                entry.target.play().catch(e => console.log('Autoplay prevented', e));
+                                            } else {
+                                                entry.target.pause();
+                                            }
+                                        });
+                                    }, { threshold: 0.1 });
+                                }
+                                window.videoObserver.observe(vid);
+                            }
                         } else {
                             const img = document.createElement('img');
                             img.loading = 'lazy';
@@ -317,12 +334,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- Visual Upgrades (Cursor, Audio, Parallax) ---
-    // Custom Cursor
+    // Custom Cursor (Optimized GPU Acceleration)
     const customCursor = document.getElementById('custom-cursor');
     if (customCursor) {
         document.addEventListener('mousemove', (e) => {
-            customCursor.style.left = e.clientX + 'px';
-            customCursor.style.top = e.clientY + 'px';
+            window.requestAnimationFrame(() => {
+                customCursor.style.transform = `translate3d(${e.clientX - 12.5}px, ${e.clientY - 12.5}px, 0)`;
+            });
         });
 
         const hoverSelector = 'a, button, .masonry-item, .skill-card, .theme-switch, .lang-switch, .hamburger, .close-menu';
