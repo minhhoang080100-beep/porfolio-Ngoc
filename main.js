@@ -241,6 +241,8 @@ async function fetchAlbumItems() {
             const div = document.createElement('div');
             div.className = 'masonry-item skeleton';
             div.dataset.category = item.category || 'all';
+            div.dataset.id = item.id;
+            div.dataset.filePath = item.file_path;
             if (item.type === 'video') {
                 div.dataset.type = 'video';
                 const vid = document.createElement('video');

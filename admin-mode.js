@@ -440,10 +440,15 @@
     async function saveExpOrder() {
         const items = document.querySelectorAll('#experienceGrid .timeline-item');
         let order = 0;
-        for (const item of items) {
-            await sb.from('experience_items').update({ sort_order: order }).eq('id', item.dataset.id);
-            order++;
-        }
+        try {
+            const promises = [];
+            for (const item of items) {
+                if (item.dataset.id) promises.push(sb.from('experience_items').update({ sort_order: order }).eq('id', parseInt(item.dataset.id)));
+                order++;
+            }
+            const results = await Promise.all(promises);
+            for (let r of results) if (r.error) throw r.error;
+        } catch(e) { showToast('Lỗi lưu thứ tự: ' + e.message, 'error'); }
     }
 
     function openExpEditor(id = null, element = null) {
@@ -534,10 +539,15 @@
     async function saveSkillOrder() {
         const items = document.querySelectorAll('#skillsGrid .skill-card');
         let order = 0;
-        for (const item of items) {
-            await sb.from('skill_items').update({ sort_order: order }).eq('id', item.dataset.id);
-            order++;
-        }
+        try {
+            const promises = [];
+            for (const item of items) {
+                if (item.dataset.id) promises.push(sb.from('skill_items').update({ sort_order: order }).eq('id', parseInt(item.dataset.id)));
+                order++;
+            }
+            const results = await Promise.all(promises);
+            for (let r of results) if (r.error) throw r.error;
+        } catch(e) { showToast('Lỗi lưu thứ tự: ' + e.message, 'error'); }
     }
 
     function openSkillEditor(id = null, element = null) {
@@ -629,13 +639,16 @@
     async function saveAlbumOrder() {
         const items = document.querySelectorAll('#albumGrid .masonry-item');
         let order = 0;
-        for (const item of items) {
-            if (item.dataset.id) {
-                await sb.from('album_items').update({ sort_order: order }).eq('id', parseInt(item.dataset.id));
+        try {
+            const promises = [];
+            for (const item of items) {
+                if (item.dataset.id) promises.push(sb.from('album_items').update({ sort_order: order }).eq('id', parseInt(item.dataset.id)));
                 order++;
             }
-        }
-        showToast('Đã lưu vị trí!', 'info');
+            const results = await Promise.all(promises);
+            for (let r of results) if (r.error) throw r.error;
+            showToast('Đã lưu vị trí!', 'info');
+        } catch(e) { showToast('Lỗi lưu vị trí: ' + e.message, 'error'); }
     }
 
     // --- Upload Media ---
