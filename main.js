@@ -629,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadScript('https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js')
         ]).then(() => {
             const adminScript = document.createElement('script');
-            adminScript.src = 'admin-mode.js';
+            adminScript.src = 'admin-mode.js?v=' + Date.now();
             document.head.appendChild(adminScript);
         });
     }
