@@ -132,17 +132,18 @@
         </div>
     </div>
 
-    <!-- Project Gallery Modal -->
-    <div class="modal" id="projectModal" style="z-index: 10000;">
-        <span class="modal-close" id="projectModalClose"><i class="fas fa-times"></i></span>
-        <div class="modal-body" style="width: 90vw; max-width: 1000px; height: 80vh; background: var(--bg-color); border-radius: 12px; padding: 30px; overflow-y: auto;">
-            <h2 id="projectModalTitle" style="margin-bottom: 20px; font-size: 2rem; color: var(--primary-color);">Dự án</h2>
-            <div id="projectModalGrid" class="masonry-grid" style="column-count: 2; column-gap: 20px;">
-                <!-- Dynamically injected photos/videos for the project -->
-            </div>
+    <!-- Lightbox Modal -->
+    <div class="modal" id="lightboxModal" style="z-index: 10000; align-items: center; justify-content: center; background: rgba(0,0,0,0.9);">
+        <span class="modal-close" id="lightboxClose" style="position: absolute; top: 20px; right: 30px; color: #fff; font-size: 2.5rem; cursor: pointer; z-index: 10001; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"><i class="fas fa-times"></i></span>
+        
+        <span class="lightbox-nav lightbox-prev" id="lightboxPrev" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 3rem; cursor: pointer; z-index: 10001; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"><i class="fas fa-chevron-left"></i></span>
+        <span class="lightbox-nav lightbox-next" id="lightboxNext" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 3rem; cursor: pointer; z-index: 10001; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"><i class="fas fa-chevron-right"></i></span>
+
+        <div id="lightboxMediaContainer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
+            <!-- Video or Image injected here -->
         </div>
     </div>
-
+    
     <!-- Custom Cursor -->
 
 

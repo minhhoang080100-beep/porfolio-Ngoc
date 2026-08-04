@@ -502,8 +502,28 @@
         } catch(e) { showToast('Lỗi lưu thứ tự: ' + e.message, 'error'); }
     }
 
-    function openExpEditor(id = null, element = null) {
+    async function openExpEditor(id = null, element = null) {
         document.getElementById('adminModalTitle').textContent = id ? 'Sửa Kinh Nghiệm' : 'Thêm Kinh Nghiệm';
+        
+        let mediaHtml = '';
+        if (id) {
+            mediaHtml = `
+                <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
+                <h4 style="margin-bottom:10px; color:var(--primary-color);">Sản phẩm / Dự án (Video/Ảnh)</h4>
+                <div id="expMediaGrid" class="admin-grid" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; min-height:80px; background: rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
+                    <span style="color:#888; font-size:0.9rem; align-self:center; margin:auto;">Đang tải...</span>
+                </div>
+                <div class="admin-form-group">
+                    <label class="admin-upload-btn" for="expMediaUpload" style="display:inline-block; margin-top:5px;">
+                        <i class="fas fa-cloud-upload-alt"></i> Tải Video/Ảnh Lên
+                    </label>
+                    <input type="file" id="expMediaUpload" accept="video/mp4,video/quicktime,image/jpeg,image/png,image/webp" style="display:none;" multiple>
+                </div>
+            `;
+        } else {
+            mediaHtml = `<p style="color:#888; font-size:0.9rem; font-style:italic; margin-top:20px;">* Hãy lưu lại mốc Kinh nghiệm mới trước để có thể tải lên Video/Ảnh.</p>`;
+        }
+
         document.getElementById('adminModalBody').innerHTML = `
             <div class="admin-form-group">
                 <label>Tên Đơn Vị / Công Ty</label>
@@ -521,6 +541,7 @@
                 <label>Vai trò (English)</label>
                 <input type="text" id="expRoleEn" class="admin-input">
             </div>
+            ${mediaHtml}
         `;
 
         if (element) {
@@ -528,6 +549,19 @@
             document.getElementById('expYear').value = element.querySelector('.year').textContent;
             document.getElementById('expRoleVi').value = element.querySelector('.role').getAttribute('data-vi');
             document.getElementById('expRoleEn').value = element.querySelector('.role').getAttribute('data-en');
+        }
+
+        if (id) {
+            await loadExpMedia(id);
+            document.getElementById('expMediaUpload').onchange = async (e) => {
+                const files = e.target.files;
+                if (!files.length) return;
+                for (let file of files) {
+                    await uploadExpMedia(file, id);
+                }
+                await loadExpMedia(id);
+                // Also trigger main.js to reload so the UI updates
+            };
         }
 
         document.getElementById('adminModalSave').onclick = async () => {
@@ -558,6 +592,95 @@
         };
         modalOverlay.style.display = 'flex';
     }
+
+    async function loadExpMedia(expId) {
+        const grid = document.getElementById('expMediaGrid');
+        if(!grid) return;
+        const { data, error } = await sb.from('album_items').select('*').eq('experience_id', expId).order('sort_order', {ascending: true});
+        if (error) { grid.innerHTML = 'Lỗi tải media'; return; }
+        
+        grid.innerHTML = '';
+        if(data.length === 0) {
+            grid.innerHTML = '<span style="color:#888; font-size:0.9rem; align-self:center; margin:auto;">Chưa có media nào.</span>';
+            return;
+        }
+
+        data.forEach(item => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'admin-exp-media-item';
+            wrapper.dataset.id = item.id;
+            wrapper.style.cssText = 'position:relative; width:80px; height:120px; border-radius:6px; overflow:hidden; background:#000; cursor:grab; box-shadow:0 2px 5px rgba(0,0,0,0.3);';
+            
+            if (item.type === 'video') {
+                const vid = document.createElement('video');
+                vid.src = item.url; vid.style.cssText = 'width:100%; height:100%; object-fit:cover; opacity:0.7;';
+                wrapper.appendChild(vid);
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-video';
+                icon.style.cssText = 'position:absolute; top:5px; left:5px; color:#fff; font-size:0.8rem; text-shadow:0 1px 3px rgba(0,0,0,0.8);';
+                wrapper.appendChild(icon);
+            } else {
+                const img = document.createElement('img');
+                img.src = item.url; img.style.cssText = 'width:100%; height:100%; object-fit:cover; opacity:0.8;';
+                wrapper.appendChild(img);
+            }
+
+            const delBtn = document.createElement('button');
+            delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            delBtn.style.cssText = 'position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.7); color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;';
+            delBtn.onclick = async (e) => {
+                e.stopPropagation();
+                if(await adminConfirm('Xóa file này vĩnh viễn?')) {
+                    const btnHtml = delBtn.innerHTML;
+                    delBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    await sb.from('album_items').delete().eq('id', item.id);
+                    await sb.storage.from('media').remove([item.file_path]);
+                    loadExpMedia(expId);
+                }
+            };
+            wrapper.appendChild(delBtn);
+            grid.appendChild(wrapper);
+        });
+
+        if (window.Sortable) {
+            new Sortable(grid, {
+                animation: 150,
+                onEnd: async () => {
+                    const items = grid.querySelectorAll('.admin-exp-media-item');
+                    let order = 0;
+                    const promises = [];
+                    items.forEach(item => {
+                        promises.push(sb.from('album_items').update({sort_order: order}).eq('id', parseInt(item.dataset.id)));
+                        order++;
+                    });
+                    await Promise.all(promises);
+                }
+            });
+        }
+    }
+
+    async function uploadExpMedia(file, expId) {
+        showToast('Đang tải lên: ' + file.name + '...');
+        const type = file.type.startsWith('video/') ? 'video' : 'image';
+        const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+        const fileName = Date.now() + '_' + safeName;
+        
+        const { error: uploadErr } = await sb.storage.from('media').upload(fileName, file);
+        if (uploadErr) return showToast('Lỗi tải file: ' + uploadErr.message, 'error');
+        
+        const { data: publicUrlData } = sb.storage.from('media').getPublicUrl(fileName);
+        const url = publicUrlData.publicUrl;
+
+        const { data: max } = await sb.from('album_items').select('sort_order').eq('experience_id', expId).order('sort_order', {ascending: false}).limit(1);
+        const sort_order = max && max.length ? max[0].sort_order + 1 : 0;
+
+        const { error: dbErr } = await sb.from('album_items').insert({
+            type, url, file_path: fileName, category: 'all', sort_order, experience_id: expId
+        });
+        if (dbErr) return showToast('Lỗi lưu DB: ' + dbErr.message, 'error');
+        showToast('Đã tải lên ' + file.name + '!');
+    }
+
 
     // =========================================
     // SKILLS CONTROLS

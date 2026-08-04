@@ -407,14 +407,19 @@ h1, h2, h3, h4 {
 
 .timeline-content {
     padding: 1.5rem;
-    background: var(--white);
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
 }
 
 .timeline-content:hover {
-    transform: translateY(-5px);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 0 25px var(--primary-color), 0 0 50px rgba(167, 208, 246, 0.4);
+    border-color: var(--primary-color);
 }
 
 .timeline-content h3 {
@@ -629,12 +634,10 @@ h1, h2, h3, h4 {
 }
 
 .modal-body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     width: 100%;
     height: 100%;
-    padding: 2rem;
+    padding: 0;
 }
 
 .modal-content {
@@ -1304,4 +1307,60 @@ body.admin-mode .navbar { top: 48px; }
     background: var(--primary-color);
     color: var(--bg-color);
     transform: translateY(-2px);
+}
+
+/* Dynamic Timeline Media Row */
+.timeline-media-row {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.media-thumb-wrapper {
+    position: relative;
+    width: calc(33.333% - 10px);
+    aspect-ratio: 9 / 16;
+    height: auto;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s ease, box-shadow 0.4s ease, z-index 0s;
+    background: #000;
+}
+
+.media-thumb-wrapper:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(167, 208, 246, 0.3);
+    z-index: 10;
+}
+
+.timeline-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.more-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.lightbox-nav:hover {
+    color: var(--primary-color) !important;
+    transform: translateY(-50%) scale(1.1) !important;
 }

@@ -210,6 +210,57 @@ async function fetchDynamicData() {
                         <span class="year">${exp.year}</span>
                     </div>
                 `;
+
+                // Add Project Thumbnails if there is media
+                const relatedMedia = albumItems.filter(item => item.experience_id === exp.id);
+                if (relatedMedia.length > 0) {
+                    const mediaRow = document.createElement('div');
+                    mediaRow.className = 'timeline-media-row';
+                    
+                    const maxDisplay = 3;
+                    const toDisplay = relatedMedia.slice(0, maxDisplay);
+                    
+                    toDisplay.forEach((item, index) => {
+                        const mediaWrapper = document.createElement('div');
+                        mediaWrapper.className = 'media-thumb-wrapper';
+                        
+                        if (item.type === 'video') {
+                            const vid = document.createElement('video');
+                            vid.src = item.url;
+                            vid.muted = true;
+                            vid.loop = true;
+                            vid.preload = 'metadata';
+                            vid.className = 'timeline-thumb';
+                            mediaWrapper.appendChild(vid);
+                            
+                            mediaWrapper.onmouseenter = () => {
+                                vid.play().catch(e => console.warn(e));
+                            };
+                            mediaWrapper.onmouseleave = () => {
+                                vid.pause();
+                                vid.currentTime = 0;
+                            };
+                        } else {
+                            const img = document.createElement('img');
+                            img.src = item.url;
+                            img.className = 'timeline-thumb';
+                            mediaWrapper.appendChild(img);
+                        }
+
+                        if (index === maxDisplay - 1 && relatedMedia.length > maxDisplay) {
+                            const overlay = document.createElement('div');
+                            overlay.className = 'more-overlay';
+                            overlay.textContent = '+' + (relatedMedia.length - maxDisplay);
+                            mediaWrapper.appendChild(overlay);
+                        }
+
+                        // Open lightbox at specific index
+                        mediaWrapper.onclick = () => window.openLightbox(relatedMedia, index);
+                        mediaRow.appendChild(mediaWrapper);
+                    });
+
+                    div.querySelector('.timeline-content').appendChild(mediaRow);
+                }
                 expGrid.appendChild(div);
             });
         }
@@ -585,47 +636,73 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// Project Modal Logic
+// Lightbox Modal Logic
 // ==========================================
-window.openProjectModal = function(companyName, mediaList) {
-    const modal = document.getElementById('projectModal');
-    const title = document.getElementById('projectModalTitle');
-    const grid = document.getElementById('projectModalGrid');
-    
-    if (!modal || !grid) return;
-    
-    title.textContent = "Dự án: " + companyName;
-    grid.innerHTML = ''; // Clear old
+let lbMediaList = [];
+let lbCurrentIndex = 0;
 
-    mediaList.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'masonry-item';
-        
-        if (item.type === 'video') {
-            const vid = document.createElement('video');
-            vid.src = item.url;
-            vid.controls = true;
-            vid.preload = 'metadata';
-            div.appendChild(vid);
-        } else {
-            const img = document.createElement('img');
-            img.src = item.url;
-            img.loading = 'lazy';
-            img.onclick = () => openMediaModal(item.url, 'image'); // Reuse single view
-            img.style.cursor = 'pointer';
-            div.appendChild(img);
-        }
-        grid.appendChild(div);
-    });
-
-    modal.style.display = 'flex';
+window.openLightbox = function(mediaList, startIndex) {
+    lbMediaList = mediaList;
+    lbCurrentIndex = startIndex;
+    renderLightboxItem();
+    document.getElementById('lightboxModal').style.display = 'flex';
 };
 
-const pmClose = document.getElementById('projectModalClose');
-if (pmClose) {
-    pmClose.onclick = () => {
-        document.getElementById('projectModal').style.display = 'none';
-        // Pause all videos when closing modal
-        document.querySelectorAll('#projectModalGrid video').forEach(v => v.pause());
+function renderLightboxItem() {
+    const container = document.getElementById('lightboxMediaContainer');
+    if (!container || lbMediaList.length === 0) return;
+    
+    container.innerHTML = '';
+    const item = lbMediaList[lbCurrentIndex];
+    
+    if (item.type === 'video') {
+        const vid = document.createElement('video');
+        vid.src = item.url;
+        vid.controls = true;
+        vid.autoplay = true;
+        vid.style.maxHeight = '90vh';
+        vid.style.maxWidth = '90vw';
+        vid.style.boxShadow = '0 10px 30px rgba(0,0,0,0.8)';
+        vid.style.borderRadius = '8px';
+        vid.style.outline = 'none';
+        container.appendChild(vid);
+    } else {
+        const img = document.createElement('img');
+        img.src = item.url;
+        img.style.maxHeight = '90vh';
+        img.style.maxWidth = '90vw';
+        img.style.boxShadow = '0 10px 30px rgba(0,0,0,0.8)';
+        img.style.borderRadius = '8px';
+        img.style.objectFit = 'contain';
+        container.appendChild(img);
+    }
+
+    // Hide arrows if only 1 item
+    document.getElementById('lightboxPrev').style.display = lbMediaList.length > 1 ? 'block' : 'none';
+    document.getElementById('lightboxNext').style.display = lbMediaList.length > 1 ? 'block' : 'none';
+}
+
+function nextLightboxItem() {
+    if (lbMediaList.length <= 1) return;
+    lbCurrentIndex = (lbCurrentIndex + 1) % lbMediaList.length;
+    renderLightboxItem();
+}
+
+function prevLightboxItem() {
+    if (lbMediaList.length <= 1) return;
+    lbCurrentIndex = (lbCurrentIndex - 1 + lbMediaList.length) % lbMediaList.length;
+    renderLightboxItem();
+}
+
+const lbClose = document.getElementById('lightboxClose');
+if (lbClose) {
+    lbClose.onclick = () => {
+        document.getElementById('lightboxModal').style.display = 'none';
+        document.getElementById('lightboxMediaContainer').innerHTML = ''; // Stop video
     };
 }
+const lbNext = document.getElementById('lightboxNext');
+if (lbNext) lbNext.onclick = nextLightboxItem;
+
+const lbPrev = document.getElementById('lightboxPrev');
+if (lbPrev) lbPrev.onclick = prevLightboxItem;
