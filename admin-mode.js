@@ -530,8 +530,18 @@
                 itemDiv.style = "display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 6px;";
                 itemDiv.innerHTML = `
                     <div style="flex: 1; font-size: 0.9rem;"><strong>${link.title}</strong><br><a href="${link.url}" target="_blank" style="color:var(--primary-color);font-size:0.8rem;">${link.url}</a></div>
+                    <button type="button" class="admin-item-btn admin-item-edit" style="position:static; margin:0;" data-idx="${idx}"><i class="fas fa-pen"></i></button>
                     <button type="button" class="admin-item-btn admin-item-delete" style="position:static; margin:0;" data-idx="${idx}"><i class="fas fa-trash-alt"></i></button>
                 `;
+                
+                itemDiv.querySelector('.admin-item-edit').onclick = () => {
+                    document.getElementById('expLinkTitle').value = link.title;
+                    document.getElementById('expLinkUrl').value = link.url;
+                    if (link.id) deletedExpLinks.push(link.id);
+                    currentExpLinks.splice(idx, 1);
+                    renderExpLinks();
+                };
+
                 itemDiv.querySelector('.admin-item-delete').onclick = () => {
                     if (link.id) deletedExpLinks.push(link.id);
                     currentExpLinks.splice(idx, 1);
