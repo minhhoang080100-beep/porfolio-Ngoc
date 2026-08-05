@@ -261,6 +261,7 @@ async function fetchDynamicData() {
 
                     div.querySelector('.timeline-content').appendChild(mediaRow);
                 }
+                
                 expGrid.appendChild(div);
             });
         }
