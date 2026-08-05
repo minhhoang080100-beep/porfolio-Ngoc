@@ -465,7 +465,14 @@
         controlsDiv.querySelector('.admin-item-delete').addEventListener('click', async (e) => {
             e.stopPropagation();
             if (await adminConfirm('Bạn có chắc chắn muốn xóa mốc kinh nghiệm này không? Hành động này không thể hoàn tác.')) {
-                const { error } = await sb.from('experience_items').delete().eq('id', parseInt(element.dataset.id));
+                const expId = parseInt(element.dataset.id);
+                // Xóa các text_link thuộc kinh nghiệm này
+                await sb.from('album_items').delete().eq('experience_id', expId).eq('type', 'text_link');
+                // Gỡ liên kết (đặt experience_id = null) cho các ảnh/video thuộc kinh nghiệm này
+                await sb.from('album_items').update({ experience_id: null }).eq('experience_id', expId);
+                
+                // Xóa mốc kinh nghiệm
+                const { error } = await sb.from('experience_items').delete().eq('id', expId);
                 if (error) return showToast('Lỗi xóa: ' + error.message, 'error');
                 element.remove(); showToast('Đã xóa!');
             }
