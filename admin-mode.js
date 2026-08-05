@@ -534,11 +534,16 @@
             list.innerHTML = '';
             currentExpLinks.forEach((link, idx) => {
                 const itemDiv = document.createElement('div');
-                itemDiv.style = "display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 6px;";
+                itemDiv.style = "display: flex; gap: 12px; align-items: center; background: var(--bg-color); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 6px rgba(0,0,0,0.02);";
                 itemDiv.innerHTML = `
-                    <div style="flex: 1; font-size: 0.9rem;"><strong>${link.title}</strong><br><a href="${link.url}" target="_blank" style="color:var(--primary-color);font-size:0.8rem;">${link.url}</a></div>
-                    <button type="button" class="admin-item-btn admin-item-edit" style="position:static; margin:0;" data-idx="${idx}"><i class="fas fa-pen"></i></button>
-                    <button type="button" class="admin-item-btn admin-item-delete" style="position:static; margin:0;" data-idx="${idx}"><i class="fas fa-trash-alt"></i></button>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-color); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${link.title}</div>
+                        <a href="${link.url}" target="_blank" style="color:var(--primary-color);font-size:0.85rem; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">${link.url}</a>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                        <button type="button" class="admin-item-edit" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background: #e0f2fe; color: #0284c7; border:none; border-radius:50%; cursor:pointer; transition: 0.2s; padding:0; margin:0;" title="Sửa"><i class="fas fa-pen" style="font-size: 0.8rem;"></i></button>
+                        <button type="button" class="admin-item-delete" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background: #fee2e2; color: #ef4444; border:none; border-radius:50%; cursor:pointer; transition: 0.2s; padding:0; margin:0;" title="Xóa"><i class="fas fa-trash-alt" style="font-size: 0.8rem;"></i></button>
+                    </div>
                 `;
                 
                 itemDiv.querySelector('.admin-item-edit').onclick = () => {
