@@ -515,19 +515,18 @@
         if (id) {
             mediaHtml = `
                 <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
-                <h4 style="margin-bottom:10px; color:var(--primary-color);">Sản phẩm / Dự án (Video/Ảnh)</h4>
-                <div id="expMediaGrid" class="admin-grid" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; min-height:80px; background: rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
+                <h4 style="margin-bottom:10px; color:var(--primary-color);">Các Link Dự án</h4>
+                <div id="expMediaGrid" class="admin-grid" style="display:flex; flex-direction:column; gap:8px; margin-bottom:15px; min-height:50px; background: rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
                     <span style="color:#888; font-size:0.9rem; align-self:center; margin:auto;">Đang tải...</span>
                 </div>
-                <div class="admin-form-group">
-                    <label class="admin-upload-btn" for="expMediaUpload" style="display:inline-block; margin-top:5px;">
-                        <i class="fas fa-cloud-upload-alt"></i> Tải Video/Ảnh Lên
-                    </label>
-                    <input type="file" id="expMediaUpload" accept="video/mp4,video/quicktime,image/jpeg,image/png,image/webp" style="display:none;" multiple>
+                <div class="admin-form-group" style="display:flex; gap:10px;">
+                    <input type="text" id="expLinkTitle" class="admin-input" placeholder="Tên dự án (VD: Phim ngắn SVM)" style="flex:1;">
+                    <input type="url" id="expLinkUrl" class="admin-input" placeholder="https://..." style="flex:2;">
+                    <button type="button" id="expLinkAdd" class="admin-upload-btn" style="padding: 0 15px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-plus"></i></button>
                 </div>
             `;
         } else {
-            mediaHtml = `<p style="color:#888; font-size:0.9rem; font-style:italic; margin-top:20px;">* Hãy lưu lại mốc Kinh nghiệm mới trước để có thể tải lên Video/Ảnh.</p>`;
+            mediaHtml = `<p style="color:#888; font-size:0.9rem; font-style:italic; margin-top:20px;">* Hãy lưu lại mốc Kinh nghiệm mới trước để có thể chèn Link dự án.</p>`;
         }
 
         document.getElementById('adminModalBody').innerHTML = `
@@ -559,14 +558,18 @@
 
         if (id) {
             await loadExpMedia(id);
-            document.getElementById('expMediaUpload').onchange = async (e) => {
-                const files = e.target.files;
-                if (!files.length) return;
-                for (let file of files) {
-                    await uploadExpMedia(file, id);
-                }
+            document.getElementById('expLinkAdd').onclick = async () => {
+                const title = document.getElementById('expLinkTitle').value.trim();
+                const url = document.getElementById('expLinkUrl').value.trim();
+                if(!title || !url) return showToast('Vui lòng nhập đủ Tên và Link!', 'error');
+                
+                document.getElementById('expLinkAdd').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                await uploadExpMedia(title, url, id);
+                
+                document.getElementById('expLinkTitle').value = '';
+                document.getElementById('expLinkUrl').value = '';
+                document.getElementById('expLinkAdd').innerHTML = '<i class="fas fa-plus"></i>';
                 await loadExpMedia(id);
-                // Also trigger main.js to reload so the UI updates
             };
         }
 
@@ -603,11 +606,11 @@
         const grid = document.getElementById('expMediaGrid');
         if(!grid) return;
         const { data, error } = await sb.from('album_items').select('*').eq('experience_id', expId).order('sort_order', {ascending: true});
-        if (error) { grid.innerHTML = 'Lỗi tải media'; return; }
+        if (error) { grid.innerHTML = 'Lỗi tải link'; return; }
         
         grid.innerHTML = '';
         if(data.length === 0) {
-            grid.innerHTML = '<span style="color:#888; font-size:0.9rem; align-self:center; margin:auto;">Chưa có media nào.</span>';
+            grid.innerHTML = '<span style="color:#888; font-size:0.9rem; align-self:center; margin:auto;">Chưa có link nào.</span>';
             return;
         }
 
@@ -615,32 +618,32 @@
             const wrapper = document.createElement('div');
             wrapper.className = 'admin-exp-media-item';
             wrapper.dataset.id = item.id;
-            wrapper.style.cssText = 'position:relative; width:80px; height:120px; border-radius:6px; overflow:hidden; background:#000; cursor:grab; box-shadow:0 2px 5px rgba(0,0,0,0.3);';
+            wrapper.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:6px; cursor:grab; border:1px solid rgba(255,255,255,0.1);';
             
-            if (item.type === 'video') {
-                const vid = document.createElement('video');
-                vid.src = item.url; vid.style.cssText = 'width:100%; height:100%; object-fit:cover; opacity:0.7;';
-                wrapper.appendChild(vid);
-                const icon = document.createElement('i');
-                icon.className = 'fas fa-video';
-                icon.style.cssText = 'position:absolute; top:5px; left:5px; color:#fff; font-size:0.8rem; text-shadow:0 1px 3px rgba(0,0,0,0.8);';
-                wrapper.appendChild(icon);
+            let title = 'Link';
+            if(item.type === 'text_link') {
+                try { title = JSON.parse(item.file_path).title; } catch(e){}
             } else {
-                const img = document.createElement('img');
-                img.src = item.url; img.style.cssText = 'width:100%; height:100%; object-fit:cover; opacity:0.8;';
-                wrapper.appendChild(img);
+                title = 'File Ảnh/Video Cũ (Nên xóa đi)';
             }
+
+            const info = document.createElement('div');
+            info.style.overflow = 'hidden';
+            info.innerHTML = `<strong style="color:#fff; font-size:0.95rem;">${title}</strong><br><a href="${item.url}" target="_blank" style="color:var(--primary-color); font-size:0.8rem; text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width: 250px;">${item.url}</a>`;
+            wrapper.appendChild(info);
 
             const delBtn = document.createElement('button');
             delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-            delBtn.style.cssText = 'position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.7); color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;';
+            delBtn.style.cssText = 'background:rgba(231,76,60,0.8); color:white; border:none; border-radius:4px; width:28px; height:28px; cursor:pointer; font-size:0.8rem; flex-shrink:0; margin-left:10px; display:flex; align-items:center; justify-content:center;';
             delBtn.onclick = async (e) => {
                 e.stopPropagation();
-                if(await adminConfirm('Xóa file này vĩnh viễn?')) {
+                if(await adminConfirm('Xóa link này vĩnh viễn?')) {
                     const btnHtml = delBtn.innerHTML;
                     delBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     await sb.from('album_items').delete().eq('id', item.id);
-                    await sb.storage.from('media').remove([item.file_path]);
+                    if(item.type !== 'text_link') {
+                        await sb.storage.from('media').remove([item.file_path]).catch(()=>{});
+                    }
                     loadExpMedia(expId);
                 }
             };
@@ -665,27 +668,22 @@
         }
     }
 
-    async function uploadExpMedia(file, expId) {
-        showToast('Đang tải lên: ' + file.name + '...');
-        const type = file.type.startsWith('video/') ? 'video' : 'image';
-        const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-        const fileName = Date.now() + '_' + safeName;
-        
-        const { error: uploadErr } = await sb.storage.from('media').upload(fileName, file);
-        if (uploadErr) return showToast('Lỗi tải file: ' + uploadErr.message, 'error');
-        
-        const { data: publicUrlData } = sb.storage.from('media').getPublicUrl(fileName);
-        const url = publicUrlData.publicUrl;
-
+    async function uploadExpMedia(title, url, expId) {
         const { data: max } = await sb.from('album_items').select('sort_order').eq('experience_id', expId).order('sort_order', {ascending: false}).limit(1);
         const sort_order = max && max.length ? max[0].sort_order + 1 : 0;
 
         const { error: dbErr } = await sb.from('album_items').insert({
-            type, url, file_path: fileName, category: 'all', sort_order, experience_id: expId
+            type: 'text_link', 
+            url: url, 
+            file_path: JSON.stringify({ title: title }), 
+            category: 'all', 
+            sort_order, 
+            experience_id: expId
         });
         if (dbErr) return showToast('Lỗi lưu DB: ' + dbErr.message, 'error');
-        showToast('Đã tải lên ' + file.name + '!');
+        showToast('Đã thêm link dự án!');
     }
+
 
 
     // =========================================

@@ -211,57 +211,32 @@ async function fetchDynamicData() {
                     </div>
                 `;
 
-                // Add Project Thumbnails if there is media
-                const relatedMedia = albumItems.filter(item => item.experience_id === exp.id);
-                if (relatedMedia.length > 0) {
-                    const mediaRow = document.createElement('div');
-                    mediaRow.className = 'timeline-media-row';
+                // Add Project Links if there are any
+                const relatedLinks = albumItems.filter(item => item.experience_id === exp.id);
+                if (relatedLinks.length > 0) {
+                    const linksContainer = document.createElement('div');
+                    linksContainer.className = 'timeline-links-container';
+                    linksContainer.style.cssText = 'margin-top: 15px; display: flex; flex-direction: column; gap: 8px;';
                     
-                    const maxDisplay = 3;
-                    const toDisplay = relatedMedia.slice(0, maxDisplay);
-                    
-                    toDisplay.forEach((item, index) => {
-                        const mediaWrapper = document.createElement('div');
-                        mediaWrapper.className = 'media-thumb-wrapper';
-                        
-                        if (item.type === 'video') {
-                            const vid = document.createElement('video');
-                            vid.src = item.url;
-                            vid.muted = true;
-                            vid.loop = true;
-                            vid.preload = 'metadata';
-                            vid.className = 'timeline-thumb';
-                            mediaWrapper.appendChild(vid);
-                            
-                            mediaWrapper.onmouseenter = () => {
-                                vid.play().catch(e => console.warn(e));
-                            };
-                            mediaWrapper.onmouseleave = () => {
-                                vid.pause();
-                                vid.currentTime = 0;
-                            };
+                    relatedLinks.forEach(item => {
+                        let title = 'Xem Dự Án';
+                        if(item.type === 'text_link') {
+                            try { title = JSON.parse(item.file_path).title; } catch(e){}
                         } else {
-                            const img = document.createElement('img');
-                            img.src = item.url;
-                            img.className = 'timeline-thumb';
-                            mediaWrapper.appendChild(img);
+                            title = 'File đa phương tiện (Bị ẩn)';
+                            return; // Skip old media files
                         }
 
-                        if (index === maxDisplay - 1 && relatedMedia.length > maxDisplay) {
-                            const overlay = document.createElement('div');
-                            overlay.className = 'more-overlay';
-                            overlay.textContent = '+' + (relatedMedia.length - maxDisplay);
-                            mediaWrapper.appendChild(overlay);
-                        }
-
-                        // Open lightbox at specific index
-                        mediaWrapper.onclick = () => window.openLightbox(relatedMedia, index);
-                        mediaRow.appendChild(mediaWrapper);
+                        const linkBtn = document.createElement('a');
+                        linkBtn.href = item.url;
+                        linkBtn.target = '_blank';
+                        linkBtn.className = 'timeline-text-link';
+                        linkBtn.innerHTML = `<i class="fas fa-external-link-alt" style="font-size:0.85rem; margin-right:6px;"></i>${title}`;
+                        linksContainer.appendChild(linkBtn);
                     });
-
-                    div.querySelector('.timeline-content').appendChild(mediaRow);
+                    
+                    div.querySelector('.timeline-content').appendChild(linksContainer);
                 }
-                
                 expGrid.appendChild(div);
             });
         }

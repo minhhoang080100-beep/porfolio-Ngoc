@@ -1379,3 +1379,27 @@ body.admin-mode .navbar { top: 48px; }
     color: var(--primary-color) !important;
     transform: translateY(-50%) scale(1.1) !important;
 }
+
+.timeline-text-link {
+    display: inline-block;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    width: fit-content;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.timeline-text-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(167, 208, 246, 0.2);
+}
