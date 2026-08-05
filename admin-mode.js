@@ -154,13 +154,15 @@
             new MutationObserver(attach).observe(grid, { childList: true });
             
             if (!grid.dataset.sortable) {
-                Sortable.create(grid, {
-                    animation: 150,
-                    delay: 200,
-                    delayOnTouchOnly: true,
-                    onEnd: saveExpOrder
-                });
-                grid.dataset.sortable = 'true';
+                if (window.Sortable) {
+                    Sortable.create(grid, {
+                        animation: 150,
+                        delay: 200,
+                        delayOnTouchOnly: true,
+                        onEnd: saveExpOrder
+                    });
+                    grid.dataset.sortable = 'true';
+                }
             }
         }
     }
@@ -192,13 +194,15 @@
             new MutationObserver(attach).observe(grid, { childList: true });
 
             if (!grid.dataset.sortable) {
-                Sortable.create(grid, {
-                    animation: 150,
-                    delay: 200,
-                    delayOnTouchOnly: true,
-                    onEnd: saveSkillOrder
-                });
-                grid.dataset.sortable = 'true';
+                if (window.Sortable) {
+                    Sortable.create(grid, {
+                        animation: 150,
+                        delay: 200,
+                        delayOnTouchOnly: true,
+                        onEnd: saveSkillOrder
+                    });
+                    grid.dataset.sortable = 'true';
+                }
             }
         }
     }
@@ -247,13 +251,15 @@
             new MutationObserver(attach).observe(grid, { childList: true });
 
             if (!grid.dataset.sortable) {
-                Sortable.create(grid, {
-                    animation: 150,
-                    delay: 200,
-                    delayOnTouchOnly: true,
-                    onEnd: saveAlbumOrder
-                });
-                grid.dataset.sortable = 'true';
+                if (window.Sortable) {
+                    Sortable.create(grid, {
+                        animation: 150,
+                        delay: 200,
+                        delayOnTouchOnly: true,
+                        onEnd: saveAlbumOrder
+                    });
+                    grid.dataset.sortable = 'true';
+                }
             }
         }
     }
@@ -574,6 +580,18 @@
         }
 
         document.getElementById('adminModalSave').onclick = async () => {
+            const titleInput = document.getElementById('expLinkTitle');
+            const urlInput = document.getElementById('expLinkUrl');
+            
+            if (titleInput && urlInput && id) {
+                const titleVal = titleInput.value.trim();
+                const urlVal = urlInput.value.trim();
+                if (titleVal && urlVal) {
+                    document.getElementById('expLinkAdd').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    await uploadExpMedia(titleVal, urlVal, id);
+                }
+            }
+
             const data = {
                 company: document.getElementById('expCompany').value.trim(),
                 year: document.getElementById('expYear').value.trim(),
@@ -597,7 +615,11 @@
                 showToast('Đã lưu thành công!');
                 closeModal();
                 setTimeout(() => window.location.reload(), 1000);
-            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+            } catch(e) { 
+                showToast('Lỗi: ' + e.message, 'error'); 
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Lưu';
+            }
         };
         modalOverlay.style.display = 'flex';
     }
