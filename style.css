@@ -435,6 +435,31 @@ h1, h2, h3, h4 {
     font-style: italic;
 }
 
+.timeline-project-link {
+    display: inline-block;
+    margin-top: 15px;
+    font-size: 0.95rem;
+    color: var(--light-text);
+    text-decoration: none;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.timeline-project-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.timeline-project-link i {
+    margin-right: 6px;
+    color: var(--primary-color);
+}
+
 /* Skills Section */
 .skills {
     background-color: var(--bg-dark);

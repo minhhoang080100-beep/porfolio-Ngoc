@@ -202,12 +202,20 @@ async function fetchDynamicData() {
                 div.className = 'timeline-item';
                 div.dataset.source = 'supabase';
                 div.dataset.id = exp.id;
+                
+                let linkHtml = '';
+                const linkItem = albumItems.find(a => a.experience_id === exp.id && a.type === 'text_link');
+                if (linkItem) {
+                    linkHtml = `<a href="${linkItem.url}" target="_blank" class="timeline-project-link"><i class="fas fa-link"></i> Bấm vào đây để xem dự án</a>`;
+                }
+
                 div.innerHTML = `
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <h3>${exp.company}</h3>
                         <p class="role" data-vi="${exp.role_vi}" data-en="${exp.role_en}">${exp.role_vi}</p>
                         <span class="year">${exp.year}</span>
+                        ${linkHtml}
                     </div>
                 `;
                 expGrid.appendChild(div);
@@ -238,6 +246,8 @@ async function fetchDynamicData() {
                 if (grid && albumItems.length > 0) {
                     grid.innerHTML = '';
                     albumItems.forEach(item => {
+                        if (item.type === 'text_link') return;
+                        
                         const div = document.createElement('div');
                         div.className = 'masonry-item skeleton';
                         div.dataset.category = item.category || 'all';

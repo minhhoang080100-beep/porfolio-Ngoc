@@ -507,6 +507,10 @@
                 <label>Vai trò (English)</label>
                 <input type="text" id="expRoleEn" class="admin-input">
             </div>
+            <div class="admin-form-group">
+                <label>Link dự án (Tùy chọn)</label>
+                <input type="url" id="expProjectUrl" class="admin-input" placeholder="https://...">
+            </div>
         `;
 
         if (element) {
@@ -514,6 +518,14 @@
             document.getElementById('expYear').value = element.querySelector('.year').textContent;
             document.getElementById('expRoleVi').value = element.querySelector('.role').getAttribute('data-vi');
             document.getElementById('expRoleEn').value = element.querySelector('.role').getAttribute('data-en');
+            
+            // Lấy link hiện tại nếu có
+            if (id) {
+                sb.from('album_items').select('url').eq('experience_id', parseInt(id)).eq('type', 'text_link').maybeSingle()
+                .then(({data}) => {
+                    if (data && data.url) document.getElementById('expProjectUrl').value = data.url;
+                }).catch(()=>{});
+            }
         }
 
         document.getElementById('adminModalSave').onclick = async () => {
@@ -523,24 +535,48 @@
                 role_vi: document.getElementById('expRoleVi').value.trim(),
                 role_en: document.getElementById('expRoleEn').value.trim()
             };
+            const projectUrl = document.getElementById('expProjectUrl').value.trim();
             if (!data.company || !data.role_vi) return showToast('Vui lòng điền đủ thông tin!', 'error');
 
             const btn = document.getElementById('adminModalSave');
             btn.disabled = true; btn.innerHTML = 'Đang lưu...';
             try {
                 let res;
+                let expId = id;
                 if (id) {
                     res = await sb.from('experience_items').update(data).eq('id', parseInt(id));
                 } else {
                     const { data: max } = await sb.from('experience_items').select('sort_order').order('sort_order', {ascending: false}).limit(1);
                     data.sort_order = max && max.length ? max[0].sort_order + 1 : 0;
-                    res = await sb.from('experience_items').insert(data);
+                    res = await sb.from('experience_items').insert(data).select().single();
+                    if (res.data) expId = res.data.id;
                 }
                 if (res.error) throw res.error;
+
+                // Xử lý lưu hoặc xóa link dự án
+                if (expId) {
+                    if (projectUrl) {
+                        const { data: existing } = await sb.from('album_items').select('id').eq('experience_id', parseInt(expId)).eq('type', 'text_link').maybeSingle();
+                        if (existing) {
+                            await sb.from('album_items').update({ url: projectUrl }).eq('id', existing.id);
+                        } else {
+                            await sb.from('album_items').insert({
+                                type: 'text_link', url: projectUrl, file_path: '', sort_order: 0, category: 'all', experience_id: parseInt(expId)
+                            });
+                        }
+                    } else {
+                        await sb.from('album_items').delete().eq('experience_id', parseInt(expId)).eq('type', 'text_link');
+                    }
+                }
+
                 showToast('Đã lưu thành công!');
                 closeModal();
                 setTimeout(() => window.location.reload(), 1000);
-            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+            } catch(e) { 
+                showToast('Lỗi: ' + e.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Lưu';
+            }
         };
         modalOverlay.style.display = 'flex';
     }
