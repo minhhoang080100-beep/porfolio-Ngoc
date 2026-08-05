@@ -535,17 +535,43 @@
             currentExpLinks.forEach((link, idx) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.style = "display: flex; gap: 12px; align-items: center; background: var(--bg-color); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 6px rgba(0,0,0,0.02);";
+                
+                const upBtn = idx > 0 ? `<button type="button" class="admin-item-up" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background: #f1f5f9; color: #475569; border:none; border-radius:50%; cursor:pointer; transition: 0.2s; padding:0; margin:0;" title="Lên trên"><i class="fas fa-arrow-up" style="font-size: 0.8rem;"></i></button>` : `<div style="width: 32px; height: 32px;"></div>`;
+                const downBtn = idx < currentExpLinks.length - 1 ? `<button type="button" class="admin-item-down" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background: #f1f5f9; color: #475569; border:none; border-radius:50%; cursor:pointer; transition: 0.2s; padding:0; margin:0;" title="Xuống dưới"><i class="fas fa-arrow-down" style="font-size: 0.8rem;"></i></button>` : `<div style="width: 32px; height: 32px;"></div>`;
+
                 itemDiv.innerHTML = `
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-color); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${link.title}</div>
                         <a href="${link.url}" target="_blank" style="color:var(--primary-color);font-size:0.85rem; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">${link.url}</a>
                     </div>
                     <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                        ${upBtn}
+                        ${downBtn}
                         <button type="button" class="admin-item-edit" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background: #e0f2fe; color: #0284c7; border:none; border-radius:50%; cursor:pointer; transition: 0.2s; padding:0; margin:0;" title="Sửa"><i class="fas fa-pen" style="font-size: 0.8rem;"></i></button>
                         <button type="button" class="admin-item-delete" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background: #fee2e2; color: #ef4444; border:none; border-radius:50%; cursor:pointer; transition: 0.2s; padding:0; margin:0;" title="Xóa"><i class="fas fa-trash-alt" style="font-size: 0.8rem;"></i></button>
                     </div>
                 `;
                 
+                const btnUp = itemDiv.querySelector('.admin-item-up');
+                if (btnUp) {
+                    btnUp.onclick = () => {
+                        const temp = currentExpLinks[idx];
+                        currentExpLinks[idx] = currentExpLinks[idx - 1];
+                        currentExpLinks[idx - 1] = temp;
+                        renderExpLinks();
+                    };
+                }
+
+                const btnDown = itemDiv.querySelector('.admin-item-down');
+                if (btnDown) {
+                    btnDown.onclick = () => {
+                        const temp = currentExpLinks[idx];
+                        currentExpLinks[idx] = currentExpLinks[idx + 1];
+                        currentExpLinks[idx + 1] = temp;
+                        renderExpLinks();
+                    };
+                }
+
                 itemDiv.querySelector('.admin-item-edit').onclick = () => {
                     document.getElementById('expLinkTitle').value = link.title;
                     document.getElementById('expLinkUrl').value = link.url;
