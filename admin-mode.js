@@ -489,6 +489,9 @@
     }
 
     function openExpEditor(id = null, element = null) {
+        let currentExpLinks = [];
+        let deletedExpLinks = [];
+
         document.getElementById('adminModalTitle').textContent = id ? 'Sửa Kinh Nghiệm' : 'Thêm Kinh Nghiệm';
         document.getElementById('adminModalBody').innerHTML = `
             <div class="admin-form-group">
@@ -508,10 +511,35 @@
                 <input type="text" id="expRoleEn" class="admin-input">
             </div>
             <div class="admin-form-group">
-                <label>Link dự án (Tùy chọn)</label>
-                <input type="url" id="expProjectUrl" class="admin-input" placeholder="https://...">
+                <label>Các Link Dự Án (Tùy chọn)</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="expLinkTitle" class="admin-input" placeholder="Tên (VD: Phim ngắn SVM)" style="flex: 1;">
+                    <input type="url" id="expLinkUrl" class="admin-input" placeholder="https://..." style="flex: 2;">
+                    <button type="button" class="admin-save-btn" id="btnAddExpLink" style="width: auto; padding: 0 15px; margin: 0;"><i class="fas fa-plus"></i></button>
+                </div>
+                <div id="expLinksList" style="display: flex; flex-direction: column; gap: 8px;"></div>
             </div>
         `;
+
+        function renderExpLinks() {
+            const list = document.getElementById('expLinksList');
+            if (!list) return;
+            list.innerHTML = '';
+            currentExpLinks.forEach((link, idx) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style = "display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 6px;";
+                itemDiv.innerHTML = `
+                    <div style="flex: 1; font-size: 0.9rem;"><strong>${link.title}</strong><br><a href="${link.url}" target="_blank" style="color:var(--primary-color);font-size:0.8rem;">${link.url}</a></div>
+                    <button type="button" class="admin-item-btn admin-item-delete" style="position:static; margin:0;" data-idx="${idx}"><i class="fas fa-trash-alt"></i></button>
+                `;
+                itemDiv.querySelector('.admin-item-delete').onclick = () => {
+                    if (link.id) deletedExpLinks.push(link.id);
+                    currentExpLinks.splice(idx, 1);
+                    renderExpLinks();
+                };
+                list.appendChild(itemDiv);
+            });
+        }
 
         if (element) {
             document.getElementById('expCompany').value = element.querySelector('h3').textContent;
@@ -519,14 +547,35 @@
             document.getElementById('expRoleVi').value = element.querySelector('.role').getAttribute('data-vi');
             document.getElementById('expRoleEn').value = element.querySelector('.role').getAttribute('data-en');
             
-            // Lấy link hiện tại nếu có
             if (id) {
-                sb.from('album_items').select('url').eq('experience_id', parseInt(id)).eq('type', 'text_link').maybeSingle()
+                sb.from('album_items').select('*').eq('experience_id', parseInt(id)).eq('type', 'text_link').order('sort_order')
                 .then(({data}) => {
-                    if (data && data.url) document.getElementById('expProjectUrl').value = data.url;
+                    if (data) {
+                        currentExpLinks = data.map(d => {
+                            let title = "Link dự án";
+                            try { title = JSON.parse(d.file_path).title || "Link dự án"; } catch(e) {}
+                            return { id: d.id, title, url: d.url };
+                        });
+                        renderExpLinks();
+                    }
                 }).catch(()=>{});
             }
         }
+
+        setTimeout(() => {
+            const btnAdd = document.getElementById('btnAddExpLink');
+            if (btnAdd) {
+                btnAdd.onclick = () => {
+                    const title = document.getElementById('expLinkTitle').value.trim();
+                    const url = document.getElementById('expLinkUrl').value.trim();
+                    if (!title || !url) return showToast('Vui lòng điền đủ tên và link', 'error');
+                    currentExpLinks.push({ title, url });
+                    renderExpLinks();
+                    document.getElementById('expLinkTitle').value = '';
+                    document.getElementById('expLinkUrl').value = '';
+                };
+            }
+        }, 100);
 
         document.getElementById('adminModalSave').onclick = async () => {
             const data = {
@@ -535,8 +584,13 @@
                 role_vi: document.getElementById('expRoleVi').value.trim(),
                 role_en: document.getElementById('expRoleEn').value.trim()
             };
-            const projectUrl = document.getElementById('expProjectUrl').value.trim();
-            if (!data.company || !data.role_vi) return showToast('Vui lòng điền đủ thông tin!', 'error');
+            
+            // Lấy thêm link đang gõ dở nếu có
+            const pendingTitle = document.getElementById('expLinkTitle').value.trim();
+            const pendingUrl = document.getElementById('expLinkUrl').value.trim();
+            if (pendingTitle && pendingUrl) currentExpLinks.push({ title: pendingTitle, url: pendingUrl });
+
+            if (!data.company || !data.role_vi) return showToast('Vui lòng điền đủ thông tin bắt buộc!', 'error');
 
             const btn = document.getElementById('adminModalSave');
             btn.disabled = true; btn.innerHTML = 'Đang lưu...';
@@ -553,19 +607,27 @@
                 }
                 if (res.error) throw res.error;
 
-                // Xử lý lưu hoặc xóa link dự án
                 if (expId) {
-                    if (projectUrl) {
-                        const { data: existing } = await sb.from('album_items').select('id').eq('experience_id', parseInt(expId)).eq('type', 'text_link').maybeSingle();
-                        if (existing) {
-                            await sb.from('album_items').update({ url: projectUrl }).eq('id', existing.id);
-                        } else {
-                            await sb.from('album_items').insert({
-                                type: 'text_link', url: projectUrl, file_path: '', sort_order: 0, category: 'all', experience_id: parseInt(expId)
-                            });
+                    if (deletedExpLinks.length > 0) {
+                        for (const dId of deletedExpLinks) {
+                            await sb.from('album_items').delete().eq('id', dId);
                         }
-                    } else {
-                        await sb.from('album_items').delete().eq('experience_id', parseInt(expId)).eq('type', 'text_link');
+                    }
+                    for (let i = 0; i < currentExpLinks.length; i++) {
+                        const link = currentExpLinks[i];
+                        const insertData = {
+                            type: 'text_link',
+                            url: link.url,
+                            file_path: JSON.stringify({ title: link.title }),
+                            sort_order: i,
+                            category: 'all',
+                            experience_id: parseInt(expId)
+                        };
+                        if (link.id) {
+                            await sb.from('album_items').update(insertData).eq('id', link.id);
+                        } else {
+                            await sb.from('album_items').insert(insertData);
+                        }
                     }
                 }
 

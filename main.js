@@ -204,9 +204,18 @@ async function fetchDynamicData() {
                 div.dataset.id = exp.id;
                 
                 let linkHtml = '';
-                const linkItem = albumItems.find(a => a.experience_id === exp.id && a.type === 'text_link');
-                if (linkItem) {
-                    linkHtml = `<a href="${linkItem.url}" target="_blank" class="timeline-project-link"><i class="fas fa-link"></i> Bấm vào đây để xem dự án</a>`;
+                const linkItems = albumItems.filter(a => a.experience_id === exp.id && a.type === 'text_link');
+                if (linkItems && linkItems.length > 0) {
+                    linkHtml = '<div class="timeline-links-container">';
+                    linkItems.forEach(item => {
+                        let title = "Bấm vào đây để xem dự án";
+                        try {
+                            const parsed = JSON.parse(item.file_path);
+                            if (parsed.title) title = parsed.title;
+                        } catch(e) {}
+                        linkHtml += `<a href="${item.url}" target="_blank" class="timeline-project-link"><i class="fas fa-link"></i> ${title}</a>`;
+                    });
+                    linkHtml += '</div>';
                 }
 
                 div.innerHTML = `
