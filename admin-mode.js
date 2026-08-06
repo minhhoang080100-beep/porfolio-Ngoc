@@ -146,7 +146,7 @@
         const grid = document.getElementById('experienceGrid');
         if (grid) {
             const attach = () => {
-                grid.querySelectorAll('.timeline-item').forEach(item => {
+                grid.querySelectorAll('.bento-card').forEach(item => {
                     if (!item.querySelector('.admin-item-controls')) addExpControls(item);
                 });
             };

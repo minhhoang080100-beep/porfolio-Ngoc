@@ -802,9 +802,7 @@ h1, h2, h3, h4 {
         height: 350px;
     }
 
-    /* Responsive overrides for Bento Grid if any */
-
-@media screen and (max-width: 768px) {
+    /* Responsive overrides for Bento Grid */
     .bento-grid {
         column-count: 2;
         column-gap: 1.5rem;
@@ -1011,7 +1009,7 @@ body.admin-mode .navbar { top: 48px; }
 }
 
 .masonry-item:hover .admin-item-controls,
-.timeline-item:hover .admin-item-controls,
+.bento-card:hover .admin-item-controls,
 .skill-card:hover .admin-item-controls { opacity: 1; }
 
 @media (max-width: 768px) {
