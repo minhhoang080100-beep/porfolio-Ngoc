@@ -197,37 +197,72 @@ async function fetchDynamicData() {
         const expGrid = document.getElementById('experienceGrid');
         if (expGrid) {
             expGrid.innerHTML = '';
+            expGrid.className = 'bento-grid'; // Swap timeline for bento-grid
             exps.forEach(exp => {
                 const div = document.createElement('div');
-                div.className = 'timeline-item';
+                div.className = 'bento-card';
                 div.dataset.source = 'supabase';
                 div.dataset.id = exp.id;
                 
                 let linkHtml = '';
                 const linkItems = albumItems.filter(a => a.experience_id === exp.id && a.type === 'text_link');
                 if (linkItems && linkItems.length > 0) {
-                    linkHtml = '<div class="timeline-links-container">';
+                    linkHtml = '<div class="bento-links-container">';
                     linkItems.forEach(item => {
                         let title = "Bấm vào đây để xem dự án";
+                        let previewImage = "";
                         try {
                             const parsed = JSON.parse(item.file_path);
                             if (parsed.title) title = parsed.title;
+                            if (parsed.preview_image) previewImage = parsed.preview_image;
                         } catch(e) {}
-                        linkHtml += `<a href="${item.url}" target="_blank" class="timeline-project-link"><i class="fas fa-link"></i> ${title}</a>`;
+                        
+                        let dataAttr = previewImage ? `data-preview-image="${previewImage}"` : '';
+                        linkHtml += `<a href="${item.url}" target="_blank" class="bento-project-link" ${dataAttr}><i class="fas fa-link"></i> ${title}</a>`;
                     });
                     linkHtml += '</div>';
                 }
 
                 div.innerHTML = `
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <h3>${exp.company}</h3>
-                        <p class="role" data-vi="${exp.role_vi}" data-en="${exp.role_en}">${exp.role_vi}</p>
-                        <span class="year">${exp.year}</span>
-                        ${linkHtml}
-                    </div>
+                    <h3>${exp.company}</h3>
+                    <p class="role" data-vi="${exp.role_vi}" data-en="${exp.role_en}">${exp.role_vi}</p>
+                    <span class="year">${exp.year}</span>
+                    ${linkHtml}
                 `;
                 expGrid.appendChild(div);
+            });
+            
+            // Setup Hover Tooltip for links
+            let tooltip = document.querySelector('.link-preview-tooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.className = 'link-preview-tooltip';
+                tooltip.innerHTML = '<img src="" alt="Preview">';
+                document.body.appendChild(tooltip);
+            }
+            const tooltipImg = tooltip.querySelector('img');
+
+            document.querySelectorAll('.bento-project-link').forEach(link => {
+                link.addEventListener('mouseenter', (e) => {
+                    const preview = link.getAttribute('data-preview-image');
+                    if (preview) {
+                        tooltipImg.src = preview;
+                        tooltip.classList.add('active');
+                    }
+                });
+                link.addEventListener('mousemove', (e) => {
+                    if (tooltip.classList.contains('active')) {
+                        // Keep tooltip in viewport bounds if possible, else just offset
+                        let left = e.clientX + 15;
+                        let top = e.clientY + 15;
+                        if (left + 250 > window.innerWidth) left = e.clientX - 265;
+                        tooltip.style.left = left + 'px';
+                        tooltip.style.top = top + 'px';
+                    }
+                });
+                link.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('active');
+                });
             });
         }
 

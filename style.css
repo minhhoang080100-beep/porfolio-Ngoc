@@ -356,114 +356,158 @@ h1, h2, h3, h4 {
     filter: blur(50px);
 }
 
-/* Experience Section */
-.timeline {
-    max-width: 800px;
+/* Experience Section (Bento Grid) */
+.bento-grid {
+    column-count: 3;
+    column-gap: 2rem;
+    max-width: 1200px;
     margin: 0 auto;
-    position: relative;
 }
 
-.timeline::after {
+.bento-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+    display: inline-block; /* Essential for masonry */
+    width: 100%; /* Essential for masonry */
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.02);
+}
+
+[data-theme="dark"] .bento-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.bento-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+.bento-card h3 {
+    color: var(--secondary-color);
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 0.4rem;
+    position: relative;
+    z-index: 2;
+    letter-spacing: -0.5px;
+}
+
+.bento-card .role {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+}
+
+.bento-card .year {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+/* Subtle Glow Effect inside Bento Card */
+.bento-card::before {
     content: '';
     position: absolute;
-    width: 2px;
-    background: var(--primary-color);
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    margin-left: -1px;
-}
-
-.timeline-item {
-    padding: 10px 40px;
-    position: relative;
-    background: inherit;
-    width: 50%;
-}
-
-.timeline-item:nth-child(odd) {
-    left: 0;
-}
-
-.timeline-item:nth-child(even) {
-    left: 50%;
-}
-
-.timeline-dot {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    right: -10px;
-    background-color: var(--bg-color);
-    border: 4px solid var(--primary-color);
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, var(--primary-color) 0%, rgba(255,255,255,0) 70%);
+    opacity: 0.1;
     border-radius: 50%;
-    top: 15px;
-    z-index: 1;
+    z-index: 0;
+    transition: transform 0.6s ease, opacity 0.6s ease;
+    filter: blur(20px);
 }
 
-.timeline-item:nth-child(even) .timeline-dot {
-    left: -10px;
+.bento-card:hover::before {
+    transform: scale(1.3) translate(-10px, 10px);
+    opacity: 0.2;
 }
 
-.timeline-content {
-    padding: 1.5rem;
-    background: var(--white);
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease;
-}
-
-.timeline-content:hover {
-    transform: translateY(-5px);
-}
-
-.timeline-content h3 {
-    color: var(--secondary-color);
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.timeline-content .role {
-    font-weight: 500;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.timeline-content .year {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    font-style: italic;
-}
-
-.timeline-links-container {
+.bento-links-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 12px;
+    position: relative;
+    z-index: 2;
 }
 
-.timeline-project-link {
-    display: inline-block;
-    font-size: 0.95rem;
-    color: var(--text-color);
+.bento-project-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--secondary-color);
     text-decoration: none;
-    padding: 8px 16px;
-    background: transparent;
-    border: 1px solid var(--text-light);
-    border-radius: 6px;
-    transition: all 0.3s ease;
+    padding: 8px 18px;
+    background: var(--white);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 50px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
 }
 
-.timeline-project-link:hover {
-    background: var(--text-color);
-    color: var(--bg-color);
-    border-color: var(--text-color);
-    transform: translateY(-2px);
+[data-theme="dark"] .bento-project-link {
+    background: rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.08);
+    color: #f1f5f9;
 }
 
-.timeline-project-link i {
-    margin-right: 6px;
+.bento-project-link:hover {
+    background: var(--primary-color);
+    color: var(--white);
+    border-color: var(--primary-color);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 15px rgba(167, 208, 246, 0.4);
+}
+
+.bento-project-link i {
+    margin-right: 8px;
     color: inherit;
+    font-size: 0.85rem;
+}
+
+/* Link Preview Tooltip */
+.link-preview-tooltip {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    background: var(--white);
+    padding: 6px;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    width: 250px;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.link-preview-tooltip.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.link-preview-tooltip img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
 }
 
 /* Skills Section */
@@ -758,31 +802,20 @@ h1, h2, h3, h4 {
         height: 350px;
     }
 
-    /* Timeline responsive */
-    .timeline::after {
-        left: 31px;
-    }
+    /* Responsive overrides for Bento Grid if any */
 
-    .timeline-item {
-        width: 100%;
-        padding-left: 70px;
-        padding-right: 25px;
-    }
-
-    .timeline-item:nth-child(even) {
-        left: 0;
-    }
-
-    .timeline-item:nth-child(even) .timeline-dot {
-        left: 21px;
-    }
-
-    .timeline-dot {
-        left: 21px;
+@media screen and (max-width: 768px) {
+    .bento-grid {
+        column-count: 2;
+        column-gap: 1.5rem;
     }
 }
 
 @media screen and (max-width: 480px) {
+    .bento-grid {
+        column-count: 1;
+    }
+
     .masonry-grid {
         column-count: 1;
     }

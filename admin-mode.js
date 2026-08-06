@@ -498,11 +498,13 @@
     function openExpEditor(id = null, element = null) {
         let currentExpLinks = [];
         let deletedExpLinks = [];
+        let currentSelectedFile = null;
+        let currentSelectedFileUrl = '';
 
         document.getElementById('adminModalTitle').textContent = id ? 'Sửa Kinh Nghiệm' : 'Thêm Kinh Nghiệm';
         document.getElementById('adminModalBody').innerHTML = `
             <div class="admin-form-group">
-                <label>Tên Đơn Vị / Công Ty</label>
+                <label>Tên Thương Hiệu (VD: Honda, MG)</label>
                 <input type="text" id="expCompany" class="admin-input">
             </div>
             <div class="admin-form-group">
@@ -519,14 +521,31 @@
             </div>
             <div class="admin-form-group">
                 <label>Các Link Dự Án (Tùy chọn)</label>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="text" id="expLinkTitle" class="admin-input" placeholder="Tên (VD: Phim ngắn SVM)" style="flex: 1;">
-                    <input type="url" id="expLinkUrl" class="admin-input" placeholder="https://..." style="flex: 2;">
+                <div style="display: flex; gap: 10px; margin-bottom: 5px; align-items: stretch;">
+                    <input type="text" id="expLinkTitle" class="admin-input" placeholder="Tên (VD: Phim ngắn SVM)" style="flex: 1; margin: 0;">
+                    <input type="url" id="expLinkUrl" class="admin-input" placeholder="https://..." style="flex: 2; margin: 0;">
+                    <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; width: 42px; background: var(--bg-color); border: 1px dashed var(--primary-color); border-radius: 8px; margin: 0; color: var(--primary-color);" title="Tải ảnh xem trước">
+                        <i class="fas fa-image"></i>
+                        <input type="file" id="expLinkPreviewFile" accept="image/*" style="display: none;">
+                    </label>
                     <button type="button" class="admin-save-btn" id="btnAddExpLink" style="width: auto; padding: 0 15px; margin: 0;"><i class="fas fa-plus"></i></button>
                 </div>
+                <div id="expLinkPreviewStatus" style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 10px; display: none;">Đã chọn ảnh: <span></span></div>
                 <div id="expLinksList" style="display: flex; flex-direction: column; gap: 8px;"></div>
             </div>
         `;
+
+        const fileInput = document.getElementById('expLinkPreviewFile');
+        const statusDiv = document.getElementById('expLinkPreviewStatus');
+        if (fileInput) {
+            fileInput.onchange = (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    currentSelectedFile = e.target.files[0];
+                    statusDiv.style.display = 'block';
+                    statusDiv.querySelector('span').textContent = currentSelectedFile.name;
+                }
+            };
+        }
 
         function renderExpLinks() {
             const list = document.getElementById('expLinksList');
@@ -538,10 +557,11 @@
                 
                 const upBtn = idx > 0 ? `<button type="button" class="admin-item-up" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background: #f1f5f9; color: #475569; border:none; border-radius:50%; cursor:pointer; transition: 0.2s; padding:0; margin:0;" title="Lên trên"><i class="fas fa-arrow-up" style="font-size: 0.8rem;"></i></button>` : `<div style="width: 32px; height: 32px;"></div>`;
                 const downBtn = idx < currentExpLinks.length - 1 ? `<button type="button" class="admin-item-down" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; background: #f1f5f9; color: #475569; border:none; border-radius:50%; cursor:pointer; transition: 0.2s; padding:0; margin:0;" title="Xuống dưới"><i class="fas fa-arrow-down" style="font-size: 0.8rem;"></i></button>` : `<div style="width: 32px; height: 32px;"></div>`;
+                const imgBadge = link.preview_image ? `<i class="fas fa-image" style="color:var(--primary-color); margin-left: 5px;" title="Có ảnh"></i>` : '';
 
                 itemDiv.innerHTML = `
                     <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-color); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${link.title}</div>
+                        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-color); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${link.title} ${imgBadge}</div>
                         <a href="${link.url}" target="_blank" style="color:var(--primary-color);font-size:0.85rem; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">${link.url}</a>
                     </div>
                     <div style="display: flex; gap: 8px; flex-shrink: 0;">
@@ -575,6 +595,11 @@
                 itemDiv.querySelector('.admin-item-edit').onclick = () => {
                     document.getElementById('expLinkTitle').value = link.title;
                     document.getElementById('expLinkUrl').value = link.url;
+                    currentSelectedFileUrl = link.preview_image || '';
+                    if (currentSelectedFileUrl) {
+                        statusDiv.style.display = 'block';
+                        statusDiv.querySelector('span').textContent = '(Đã có ảnh lưu từ trước)';
+                    }
                     if (link.id) deletedExpLinks.push(link.id);
                     currentExpLinks.splice(idx, 1);
                     renderExpLinks();
@@ -601,8 +626,13 @@
                     if (data) {
                         currentExpLinks = data.map(d => {
                             let title = "Link dự án";
-                            try { title = JSON.parse(d.file_path).title || "Link dự án"; } catch(e) {}
-                            return { id: d.id, title, url: d.url };
+                            let preview_image = "";
+                            try { 
+                                const parsed = JSON.parse(d.file_path);
+                                title = parsed.title || "Link dự án"; 
+                                preview_image = parsed.preview_image || "";
+                            } catch(e) {}
+                            return { id: d.id, title, url: d.url, preview_image };
                         });
                         renderExpLinks();
                     }
@@ -613,14 +643,42 @@
         setTimeout(() => {
             const btnAdd = document.getElementById('btnAddExpLink');
             if (btnAdd) {
-                btnAdd.onclick = () => {
+                btnAdd.onclick = async () => {
                     const title = document.getElementById('expLinkTitle').value.trim();
                     const url = document.getElementById('expLinkUrl').value.trim();
                     if (!title || !url) return showToast('Vui lòng điền đủ tên và link', 'error');
-                    currentExpLinks.push({ title, url });
+                    
+                    let previewUrl = currentSelectedFileUrl;
+                    if (currentSelectedFile) {
+                        btnAdd.disabled = true;
+                        btnAdd.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        const fileExt = currentSelectedFile.name.split('.').pop();
+                        const fileName = `preview_${Date.now()}.${fileExt}`;
+                        const { data, error } = await sb.storage.from('portfolio_media').upload(fileName, currentSelectedFile);
+                        if (error) {
+                            showToast('Lỗi tải ảnh: ' + error.message, 'error');
+                            btnAdd.disabled = false;
+                            btnAdd.innerHTML = '<i class="fas fa-plus"></i>';
+                            return;
+                        } else {
+                            const { data: publicData } = sb.storage.from('portfolio_media').getPublicUrl(fileName);
+                            previewUrl = publicData.publicUrl;
+                        }
+                        btnAdd.disabled = false;
+                        btnAdd.innerHTML = '<i class="fas fa-plus"></i>';
+                    }
+
+                    currentExpLinks.push({ title, url, preview_image: previewUrl });
                     renderExpLinks();
+                    
                     document.getElementById('expLinkTitle').value = '';
                     document.getElementById('expLinkUrl').value = '';
+                    currentSelectedFile = null;
+                    currentSelectedFileUrl = '';
+                    const fileInput = document.getElementById('expLinkPreviewFile');
+                    const statusDiv = document.getElementById('expLinkPreviewStatus');
+                    if (fileInput) fileInput.value = '';
+                    if (statusDiv) statusDiv.style.display = 'none';
                 };
             }
         }, 100);
@@ -633,10 +691,9 @@
                 role_en: document.getElementById('expRoleEn').value.trim()
             };
             
-            // Lấy thêm link đang gõ dở nếu có
             const pendingTitle = document.getElementById('expLinkTitle').value.trim();
             const pendingUrl = document.getElementById('expLinkUrl').value.trim();
-            if (pendingTitle && pendingUrl) currentExpLinks.push({ title: pendingTitle, url: pendingUrl });
+            if (pendingTitle && pendingUrl) currentExpLinks.push({ title: pendingTitle, url: pendingUrl, preview_image: currentSelectedFileUrl });
 
             if (!data.company || !data.role_vi) return showToast('Vui lòng điền đủ thông tin bắt buộc!', 'error');
 
@@ -666,7 +723,7 @@
                         const insertData = {
                             type: 'text_link',
                             url: link.url,
-                            file_path: JSON.stringify({ title: link.title }),
+                            file_path: JSON.stringify({ title: link.title, preview_image: link.preview_image || "" }),
                             sort_order: i,
                             category: 'all',
                             experience_id: parseInt(expId)
