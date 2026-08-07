@@ -197,7 +197,7 @@ async function fetchDynamicData() {
         const expGrid = document.getElementById('experienceGrid');
         if (expGrid) {
             expGrid.innerHTML = '';
-            expGrid.className = 'bento-grid'; // Swap timeline for bento-grid
+            // className is already set in index.html
             exps.forEach(exp => {
                 const div = document.createElement('div');
                 div.className = 'bento-card';
@@ -252,10 +252,15 @@ async function fetchDynamicData() {
                 });
                 link.addEventListener('mousemove', (e) => {
                     if (tooltip.classList.contains('active')) {
-                        // Keep tooltip in viewport bounds if possible, else just offset
                         let left = e.clientX + 15;
                         let top = e.clientY + 15;
+                        
+                        // Prevent overflow on right edge
                         if (left + 250 > window.innerWidth) left = e.clientX - 265;
+                        
+                        // Prevent overflow on bottom edge (tooltip height is ~150px)
+                        if (top + 160 > window.innerHeight) top = e.clientY - 165;
+                        
                         tooltip.style.left = left + 'px';
                         tooltip.style.top = top + 'px';
                     }

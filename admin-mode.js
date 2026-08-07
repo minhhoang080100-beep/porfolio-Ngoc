@@ -482,7 +482,7 @@
     }
 
     async function saveExpOrder() {
-        const items = document.querySelectorAll('#experienceGrid .timeline-item');
+        const items = document.querySelectorAll('#experienceGrid .bento-card');
         let order = 0;
         try {
             const promises = [];
@@ -693,12 +693,29 @@
             
             const pendingTitle = document.getElementById('expLinkTitle').value.trim();
             const pendingUrl = document.getElementById('expLinkUrl').value.trim();
-            if (pendingTitle && pendingUrl) currentExpLinks.push({ title: pendingTitle, url: pendingUrl, preview_image: currentSelectedFileUrl });
-
+            
             if (!data.company || !data.role_vi) return showToast('Vui lòng điền đủ thông tin bắt buộc!', 'error');
 
             const btn = document.getElementById('adminModalSave');
             btn.disabled = true; btn.innerHTML = 'Đang lưu...';
+            
+            if (pendingTitle && pendingUrl) {
+                let previewUrl = currentSelectedFileUrl;
+                if (currentSelectedFile) {
+                    btn.innerHTML = 'Đang tải ảnh...';
+                    const fileExt = currentSelectedFile.name.split('.').pop();
+                    const fileName = `preview_${Date.now()}.${fileExt}`;
+                    const { error } = await sb.storage.from('portfolio_media').upload(fileName, currentSelectedFile);
+                    if (!error) {
+                        const { data: publicData } = sb.storage.from('portfolio_media').getPublicUrl(fileName);
+                        previewUrl = publicData.publicUrl;
+                    }
+                    btn.innerHTML = 'Đang lưu...';
+                }
+                currentExpLinks.push({ title: pendingTitle, url: pendingUrl, preview_image: previewUrl });
+            }
+
+
             try {
                 let res;
                 let expId = id;
