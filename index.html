@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hà Ngọc - Digital Creator & Talent</title>
+    <meta name="description" content="Portfolio Hà Ngọc — Digital Creator, VJ và diễn viên tự do. Khám phá kinh nghiệm, kỹ năng và các sản phẩm sáng tạo nội dung.">
+    <link rel="canonical" href="https://porfolio-ngoc.vercel.app/">
     <!-- Open Graph / Social Media Meta Tags -->
     <meta property="og:title" content="Hà Ngọc - Digital Creator & Talent">
+    <meta property="og:description" content="Khám phá kinh nghiệm, kỹ năng và các sản phẩm sáng tạo nội dung của Hà Ngọc — Digital Creator, VJ và diễn viên tự do.">
     <meta property="og:image" content="https://porfolio-ngoc.vercel.app/og-image.jpg">
     <meta property="og:url" content="https://porfolio-ngoc.vercel.app/">
     <meta property="og:type" content="website">
@@ -19,9 +22,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="custom-cursor" id="custom-cursor"></div>
+    <a class="skip-link" href="#about">Đến nội dung chính</a>
+    <div class="custom-cursor" id="custom-cursor" aria-hidden="true"></div>
     <!-- Navbar -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Điều hướng chính">
         <div class="nav-container">
             <a href="#" class="logo">HÀ NGỌC</a>
             <div class="nav-links">
@@ -30,38 +34,39 @@
                 <a href="#skills" data-i18n="nav_skills">Skills</a>
                 <a href="#album" data-i18n="nav_album">Album</a>
                 <a href="#contact" data-i18n="nav_contact">Contact</a>
-                <a href="Nguyen-Ha-Ngoc-CV.pdf" target="_blank" class="btn-cv" data-i18n="nav_cv">View CV</a>
+                <a href="Nguyen-Ha-Ngoc-CV.pdf" target="_blank" rel="noopener noreferrer" class="btn-cv" data-i18n="nav_cv">View CV</a>
             </div>
             <div class="nav-controls">
-                <div class="lang-switch" id="lang-switch" title="Switch Language">
+                <button type="button" class="lang-switch" id="lang-switch" aria-label="Đổi ngôn ngữ" title="Switch Language">
                     <span>EN</span>
-                </div>
-                <div class="theme-switch" id="theme-switch" title="Chuyển đổi Sáng/Tối">
-                    <i class="fas fa-moon"></i>
-                </div>
-                <div class="hamburger">
-                    <i class="fas fa-bars"></i>
-                </div>
+                </button>
+                <button type="button" class="theme-switch" id="theme-switch" aria-label="Bật giao diện tối" aria-pressed="false" title="Chuyển đổi Sáng/Tối">
+                    <i class="fas fa-moon" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="hamburger" id="menuToggle" aria-label="Mở menu" aria-controls="mobileMenu" aria-expanded="false">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
     </nav>
 
     <!-- Mobile Menu -->
-    <div class="mobile-menu">
-        <div class="close-menu"><i class="fas fa-times"></i></div>
+    <div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Điều hướng" tabindex="-1" hidden inert>
+        <button type="button" class="close-menu" aria-label="Đóng menu"><i class="fas fa-times" aria-hidden="true"></i></button>
         <a href="#about" class="mobile-link" data-i18n="nav_about">About</a>
         <a href="#experience" class="mobile-link" data-i18n="nav_experience">Experience</a>
         <a href="#skills" class="mobile-link" data-i18n="nav_skills">Skills</a>
         <a href="#album" class="mobile-link" data-i18n="nav_album">Album</a>
         <a href="#contact" class="mobile-link" data-i18n="nav_contact">Contact</a>
-        <a href="Nguyen-Ha-Ngoc-CV.pdf" target="_blank" class="mobile-link btn-cv" data-i18n="nav_cv">View CV</a>
+        <a href="Nguyen-Ha-Ngoc-CV.pdf" target="_blank" rel="noopener noreferrer" class="mobile-link btn-cv" data-i18n="nav_cv">View CV</a>
     </div>
 
+    <main>
     <!-- Hero Section -->
-    <header id="about" class="hero">
-        <div class="hero-content reveal">
-            <h2 class="pre-title" data-i18n="hero_subtitle">DIGITAL CREATOR & TALENT</h2>
-            <h1 class="title" id="typewriter"></h1>
+    <header id="about" class="hero" tabindex="-1">
+        <div class="hero-content">
+            <p class="pre-title" data-i18n="hero_subtitle">DIGITAL CREATOR & TALENT</p>
+            <h1 class="title" id="typewriter">HÀ NGỌC<svg class="hero-signature" viewBox="0 0 340 20" aria-hidden="true" focusable="false"><path pathLength="1" d="M4 13 C84 3 230 3 334 9 M208 16 C250 12 290 12 320 14" /></svg></h1>
             <p class="intro" data-i18n="hero_intro">
                 Xin chào, tôi là Hà Ngọc — một Digital Creator, VJ và Diễn viên tự do. Tôi là cầu nối đưa câu chuyện của thương hiệu đến gần hơn với công chúng. Với tư duy nội dung đa chiều và bản lĩnh trước ống kính, tôi có khả năng độc lập sản xuất các sản phẩm Social Media trọn gói — từ lên ý tưởng, viết kịch bản đến diễn xuất — đồng thời luôn mang đến tác phong làm việc chuyên nghiệp, linh hoạt trong mọi dự án hợp tác.
             </p>
@@ -70,11 +75,14 @@
                 <a href="#experience" class="btn btn-outline" data-i18n="hero_btn_exp">Kinh Nghiệm</a>
             </div>
         </div>
-        <div class="hero-image reveal">
-            <img loading="lazy" src="source/Lọc%20source/1.jpg" alt="Hà Ngọc">
-            <div class="blob-shape"></div>
+        <div class="hero-image">
+            <img loading="eager" fetchpriority="high" width="828" height="1472" src="source/Lọc%20source/1.jpg" alt="Chân dung Hà Ngọc">
+            <div class="blob-shape" aria-hidden="true"></div>
         </div>
     </header>
+    <noscript>
+        <p class="section-status">Bật JavaScript để xem album và nội dung cập nhật. Bạn vẫn có thể <a href="Nguyen-Ha-Ngoc-CV.pdf">xem hồ sơ năng lực của Hà Ngọc</a>.</p>
+    </noscript>
 
     <!-- Experience Section -->
     <section id="experience" class="experience section">
@@ -106,11 +114,12 @@
         <div class="contact-container reveal">
             <p data-i18n="contact_desc">Hãy liên hệ với tôi để cùng hợp tác trong những dự án sáng tạo sắp tới!</p>
             <div class="contact-info" id="contactInfo">
-                <!-- Dynamic contact info will be injected here -->
+                <a class="contact-item" href="Nguyen-Ha-Ngoc-CV.pdf" target="_blank" rel="noopener noreferrer" data-cv-link data-i18n="nav_cv">Xem hồ sơ năng lực</a>
             </div>
         </div>
     </section>
 
+    </main>
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
@@ -123,38 +132,16 @@
     </footer>
 
     <!-- Media Modal -->
-    <div class="modal" id="mediaModal">
-        <span class="modal-close"><i class="fas fa-times"></i></span>
+    <div class="modal" id="mediaModal" role="dialog" aria-modal="true" aria-label="Xem nội dung" tabindex="-1">
+        <button type="button" class="modal-close" aria-label="Đóng nội dung"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
+        <a id="modalDownload" class="modal-download" target="_blank" rel="noopener noreferrer" hidden>Mở tệp riêng</a>
         <div class="modal-body">
-            <img class="modal-content" id="modalImg" style="display: none;">
-            <video class="modal-content" id="modalVideo" style="display: none;" controls autoplay></video>
-            <iframe class="modal-content" id="modalPdf" style="display: none; width: 90vw; max-width: 1000px; height: 85vh; border: none; border-radius: 8px; background: #fff;"></iframe>
+            <img class="modal-content" id="modalImg" alt="" style="display: none;">
+            <video class="modal-content" id="modalVideo" style="display: none;" controls playsinline preload="metadata" aria-label="Video trong album"></video>
+            <iframe class="modal-content" id="modalPdf" title="Hồ sơ năng lực Hà Ngọc" style="display: none;"></iframe>
         </div>
     </div>
-
-    <!-- Project Gallery Modal -->
-    <div class="modal" id="projectModal" style="z-index: 10000;">
-        <span class="modal-close" id="projectModalClose"><i class="fas fa-times"></i></span>
-        <div class="modal-body" style="width: 90vw; max-width: 1000px; height: 80vh; background: var(--bg-color); border-radius: 12px; padding: 30px; overflow-y: auto;">
-            <h2 id="projectModalTitle" style="margin-bottom: 20px; font-size: 2rem; color: var(--primary-color);">Dự án</h2>
-            <div id="projectModalGrid" class="masonry-grid" style="column-count: 2; column-gap: 20px;">
-                <!-- Dynamically injected photos/videos for the project -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Custom Cursor -->
-
-
-
-    <!-- Error State Overlay -->
-    <div id="errorOverlay" class="error-overlay" style="display: none;">
-        <i class="fas fa-plug"></i>
-        <h2 data-i18n="error_title">Hệ thống đang bảo trì</h2>
-        <p data-i18n="error_desc">Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng hoặc thử lại sau.</p>
-        <button id="btnRetry" class="btn btn-primary"><i class="fas fa-redo"></i> Thử lại</button>
-    </div>
-
+    <script src="portfolio-core.js"></script>
     <script src="main.js"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Hà Ngọc Portfolio</title>
+    <meta name="robots" content="noindex, nofollow">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -35,12 +36,12 @@
         .pin-logo {
             font-size: 2.2rem;
             font-weight: 700;
-            color: #a7d0f6;
+            color: #32628d;
             margin-bottom: 0.2rem;
             letter-spacing: -0.02em;
         }
         .pin-subtitle {
-            color: #aaa;
+            color: #666;
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.15em;
@@ -59,12 +60,13 @@
             transition: 0.3s;
             color: #2b2a2a;
         }
-        .pin-input:focus { outline: none; border-color: #a7d0f6; }
+        .pin-label { display: block; text-align: left; font-weight: 600; margin-bottom: 0.5rem; }
+        .pin-input:focus { outline: 3px solid #32628d; outline-offset: 2px; border-color: #32628d; }
         .pin-btn {
             width: 100%;
             padding: 1rem;
             background: #a7d0f6;
-            color: white;
+            color: #2b2a2a;
             border: none;
             border-radius: 12px;
             font-family: inherit;
@@ -73,25 +75,29 @@
             cursor: pointer;
             transition: 0.3s;
         }
-        .pin-btn:hover { background: #2b2a2a; }
+        .pin-btn:hover { background: #2b2a2a; color: white; }
+        .pin-btn:focus-visible { outline: 3px solid #32628d; outline-offset: 3px; }
         .pin-error {
-            color: #e74c3c;
+            color: #a52a21;
             font-size: 0.85rem;
             margin-top: 1rem;
             display: none;
         }
+        @media (max-width: 380px) { .pin-container { padding: 2rem 1.25rem; } }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
     </style>
 </head>
 <body>
     <div class="pin-container">
-        <div class="pin-logo">HÀ NGỌC</div>
+        <h1 class="pin-logo">HÀ NGỌC</h1>
         <p class="pin-subtitle">Quản trị viên</p>
-        <input type="password" class="pin-input" id="pinInput" placeholder="••••" autocomplete="off">
-        <button class="pin-btn" id="btnPin">
-            <i class="fas fa-arrow-right"></i> Truy cập
+        <label class="pin-label" for="pinInput">Mã PIN</label>
+        <input type="password" class="pin-input" id="pinInput" placeholder="••••" autocomplete="off" inputmode="numeric" aria-describedby="pinError">
+        <button type="button" class="pin-btn" id="btnPin">
+            <i class="fas fa-arrow-right" aria-hidden="true"></i> Truy cập
         </button>
-        <p class="pin-error" id="pinError">
-            <i class="fas fa-exclamation-circle"></i> Sai mã PIN!
+        <p class="pin-error" id="pinError" role="alert">
+            <i class="fas fa-exclamation-circle" aria-hidden="true"></i> Sai mã PIN!
         </p>
     </div>
     <script>
